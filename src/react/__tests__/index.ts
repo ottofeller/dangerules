@@ -1,13 +1,13 @@
 import * as fs from 'fs'
-import {componentDirRestrictions} from '../index'
 import {DangerDSLType} from 'danger'
+import {dirNameRestrictions} from '../index'
 jest.mock('fs')
 
 describe('React rules', () => {
-  describe('Restrictions on the component\'s dir name', () => {
-    it('require component\'s dir name to have first letter capitalized', () => {
-      const failMock = jest.fn()
+  describe('Restrictions on the dir name', () => {
+    const failMock = jest.fn()
 
+    it('requires component\'s dir name to have first letter capitalized', () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
         if(path === 'src/component/index.tsx' || path === 'src/another/Component/index.tsx') {
@@ -15,7 +15,7 @@ describe('React rules', () => {
         }
       })
 
-      componentDirRestrictions({
+      dirNameRestrictions({
         danger: {git: {
           created_files: ['src/component/index.ts'],
 
@@ -32,7 +32,7 @@ describe('React rules', () => {
       expect(failMock).toHaveBeenCalled()
       failMock.mockReset()
 
-      componentDirRestrictions({
+      dirNameRestrictions({
         danger: {git: {
           created_files: [''],
 
@@ -52,7 +52,7 @@ describe('React rules', () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => 'const someExport = 1')
 
-      componentDirRestrictions({
+      dirNameRestrictions({
         danger: {git: {
           created_files: [''],
 
@@ -69,13 +69,11 @@ describe('React rules', () => {
       expect(failMock).not.toHaveBeenCalled()
     })
 
-    it('require component\'s dir name to be in camel case', () => {
-      const failMock = jest.fn()
-
+    it('requires component\'s dir name to be in camel case', () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => 'const SomeCompnent = memo(function NewComponent() { return null })')
 
-      componentDirRestrictions({
+      dirNameRestrictions({
         danger: {git: {
           created_files: ['src/somComponent/index.ts'],
 
@@ -94,12 +92,12 @@ describe('React rules', () => {
 
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
-        if(path === 'src/SomeComponent/index.tsx') {
+        if(path === 'src/another/SomeComponent/index.tsx') {
           return 'const SomeCompnent = memo(function NewComponent() { return null })'
         }
       })
 
-      componentDirRestrictions({
+      dirNameRestrictions({
         danger: {git: {
           created_files: [''],
 
@@ -114,6 +112,86 @@ describe('React rules', () => {
       })
 
       expect(failMock).not.toHaveBeenCalled()
+    })
+
+    it('requires non-component\'s dir name to be in dash case', () => {
+      failMock.mockReset()
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation(() => '')
+
+      dirNameRestrictions({
+        danger: {git: {
+          created_files: ['src/someComponent/index.ts'],
+
+          fileMatch: (file: string) => ({
+            getKeyedPaths: () => ({created: [''], edited: [file]}),
+          }),
+
+          modified_files: ['src/another/SomeComponent/index.ts'],
+        }} as DangerDSLType,
+
+        fail: failMock,
+      })
+
+      expect(failMock).toHaveBeenCalled()
+      failMock.mockReset()
+
+      dirNameRestrictions({
+        danger: {git: {
+          created_files: [''],
+
+          fileMatch: (file: string) => ({
+            getKeyedPaths: () => ({created: [''], edited: [file]}),
+          }),
+
+          modified_files: ['src/another/some_component/index.ts'],
+        }} as DangerDSLType,
+
+        fail: failMock,
+      })
+
+      expect(failMock).toHaveBeenCalled()
+      failMock.mockReset()
+
+      dirNameRestrictions({
+        danger: {git: {
+          created_files: [''],
+
+          fileMatch: (file: string) => ({
+            getKeyedPaths: () => ({created: [''], edited: [file]}),
+          }),
+
+          modified_files: ['src/another/some-component/index.ts'],
+        }} as DangerDSLType,
+
+        fail: failMock,
+      })
+
+      expect(failMock).not.toHaveBeenCalled()
+    })
+
+    it('requires non-component\'s dir name to be in lower case', () => {
+      failMock.mockReset()
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation(() => '')
+
+      dirNameRestrictions({
+        danger: {git: {
+          created_files: ['src/Some-component/index.ts'],
+
+          fileMatch: (file: string) => ({
+            getKeyedPaths: () => ({created: [''], edited: [file]}),
+          }),
+
+          modified_files: ['src/another/Another-Component/index.ts'],
+        }} as DangerDSLType,
+
+        fail: failMock,
+      })
+
+      expect(failMock).toHaveBeenCalledTimes(2)
     })
   })
 })

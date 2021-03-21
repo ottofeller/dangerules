@@ -1,1 +1,1 @@
-export * from './component-dir-restrictions'
+export * from './dir-name-restrictions'

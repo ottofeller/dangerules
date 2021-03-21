@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
 
-export const componentDirRestrictions = (params: {
+export const dirNameRestrictions = (params: {
   danger: DangerDSLType
   fail: (message: string) => void
 }) => {
@@ -18,7 +18,10 @@ export const componentDirRestrictions = (params: {
       const path = R.compose(R.join('/'), R.slice(0, index))(dirs)
       const dirName = dirs[index - 1]
       const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
-      const isDirNameCamelCased = !dirName.match(/[\-_]+/g)
+      const isDirNameCamelCased = dirName.match(/[a-z][A-Z]/g)
+      const isDirNameSnakeCased = dirName.match(/[_]+/g)
+      const isDirNameDashCased = dirName.match(/[\-_]+/g)
+      const isNextjsRouteParameterDir = dirName.match(/^\[.*\]$/g)
       let isReactComponent
 
       // Don't check the same hierarchy of paths twice
@@ -26,7 +29,6 @@ export const componentDirRestrictions = (params: {
         return
       }
 
-      
       if(dirName === '__tests__') {
         return
       }
@@ -44,8 +46,25 @@ export const componentDirRestrictions = (params: {
         params.fail(`Component's dir name must have first letter capitalized: ${path}`)
       }
 
-      if(isReactComponent && !isDirNameCamelCased) {
+      if(isReactComponent && (isDirNameDashCased || isDirNameSnakeCased)) {
         params.fail(`Component's dir name must be in camel case: ${path}`)
+      }
+
+      if(!isReactComponent && isDirNameCamelCased) {
+        params.fail(`Non-component's dir name should not be in camel case: ${path}`)
+      }
+
+      if(!isReactComponent && dirName.match(/[a-z]{1}[A-Z]{1}/g) && !isNextjsRouteParameterDir) {
+        // eslint-disable-next-line max-len
+        params.fail(`Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`)
+      }
+  
+      if(!isReactComponent && isDirNameFirstLetterCapitalized) {
+        params.fail(`Non-component's dir name must have first letter in lower case: ${path}`)
+      }
+  
+      if(!isReactComponent && isDirNameSnakeCased) {
+        params.fail(`Use "-" instead of "_" in non-component dir names: ${path}`)
       }
 
       checkedPaths = R.concat(checkedPaths, [path])
