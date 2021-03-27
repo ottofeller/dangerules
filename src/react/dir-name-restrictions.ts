@@ -76,7 +76,7 @@ export const dirNameRestrictions = (params: {
         ...R.map(excludePath => R.startsWith(excludePath), params.excludePaths || []),
       ]),
 
-      R.concat(params.danger.git.modified_files, params.danger.git.created_files), // filesWithExtension.getKeyedPaths().edited,
+      R.concat(params.danger.git.modified_files, params.danger.git.created_files),
     ),
   )
 }
