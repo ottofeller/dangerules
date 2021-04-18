@@ -26,6 +26,7 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@babel/parser": "7.13.15",
     "@babel/preset-env": "7.13.10",
     "@babel/preset-typescript": "7.13.0",
     "@ottofeller/eslint-config-ottofeller": "0.8.2",
