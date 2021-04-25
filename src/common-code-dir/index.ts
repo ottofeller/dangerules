@@ -16,7 +16,7 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
         path         : `${params.path.replace(/\/$/, '')}/${file}`,
       })
     }else{
-      newAllFoundFiles.push(path.join(__dirname, `${params.path.replace(/\/$/, '')}/${file}`))
+      newAllFoundFiles.push(`${params.path.replace(/\/$/, '')}/${file}`)
     }
   }, files)
 
@@ -55,8 +55,9 @@ export const commonCodeDir = (params: {
     >(
       R.countBy(R.identity),
 
+      // TODO Check for existence of file (to exclude imports from node_modules)
       // Only count import paths without "/common/"
-      R.filter<string>((innerPath: string) => !R.includes('/common/', innerPath)),
+      R.filter<string>((innerPath: string) => fs.existsSync(innerPath) && !R.includes('/common/', innerPath)),
 
       R.flatten,
 
@@ -78,12 +79,23 @@ export const commonCodeDir = (params: {
 
         // Get all babel statements of imports from AST
         R.filter((statement: babelTypes.Statement) => statement.type === 'ImportDeclaration'),
-      )(babelParse.parse((fs.readFileSync(innerPath) || '').toString(), {sourceType: 'module'}).program.body)),
+      )(
+        babelParse.parse(
+          (fs.readFileSync(path.resolve(params.baseImportPath || '', innerPath)) || '').toString(),
+          {errorRecovery: true, plugins: ['jsx', 'typescript'], sourceType: 'module'},
+        ).program.body),
+      ),
 
       R.flatten,
 
-      // Find all files (including nested ones) in a dir
-      R.map(includePath => readdirNested({allFoundFiles: [], path: includePath})),
+      // Find all js/jsx/ts/tsx files (including nested ones) in a dir
+      // Exclude unit tests, their imports should not be considered as common
+      R.map(includePath => R.filter(
+        innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath)) &&
+          R.isEmpty(R.match(/__tests__/i, innerPath)),
+
+        readdirNested({allFoundFiles: [], path: includePath}),
+      )),
     )(params.includePaths)),
   )
 }
