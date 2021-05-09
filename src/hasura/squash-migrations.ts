@@ -3,7 +3,7 @@ import {DangerDSLType} from 'danger'
 // Disallow a file extenstion in the selected dirs
 export const squashMigrations = (params: {
   danger: DangerDSLType
-  hasuraMigrationsPath: Array<string>
+  hasuraMigrationsPath: string
   maxMigrationsLimit: number
   warn: (message: string) => void
 }) => {

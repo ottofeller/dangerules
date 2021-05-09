@@ -20,7 +20,7 @@ describe('Hasura rules', () => {
           }),
         }} as DangerDSLType,
         
-        hasuraMigrationsPath: ['hasura/migrations'],
+        hasuraMigrationsPath: 'hasura/migrations',
         maxMigrationsLimit  : 10,
         warn                : warnMock,
       })
@@ -41,7 +41,7 @@ describe('Hasura rules', () => {
           }),
         }} as DangerDSLType,
         
-        hasuraMigrationsPath: ['hasura/migrations'],
+        hasuraMigrationsPath: 'hasura/migrations',
         maxMigrationsLimit  : 10,
         warn                : warnMock,
       })
