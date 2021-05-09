@@ -98,10 +98,7 @@ describe('Common code dir rule', () => {
       baseImportPath: 'src/',
 
       danger: {git: {
-        fileMatch: () => ({
-          edited       : true,
-          getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']}),
-        }),
+        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
       
       fail        : failMock,
@@ -142,10 +139,7 @@ describe('Common code dir rule', () => {
       baseImportPath: 'src/',
 
       danger: {git: {
-        fileMatch: () => ({
-          edited       : true,
-          getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']}),
-        }),
+        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
 
       fail        : failMock,
@@ -232,10 +226,7 @@ describe('Common code dir rule', () => {
       baseImportPath: 'src/',
 
       danger: {git: {
-        fileMatch: () => ({
-          edited       : true,
-          getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']}),
-        }),
+        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
       
       fail        : failMock,
@@ -290,10 +281,7 @@ describe('Common code dir rule', () => {
       baseImportPath: 'src/',
 
       danger: {git: {
-        fileMatch: () => ({
-          edited       : true,
-          getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']}),
-        }),
+        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
 
       fail        : failMock,
