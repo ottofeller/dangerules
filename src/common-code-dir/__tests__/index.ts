@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import * as fs from 'fs'
 import * as R from 'ramda'
 import {commonCodeDir} from '../index'
@@ -284,6 +285,66 @@ describe('Common code dir rule', () => {
         fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
 
+      fail        : failMock,
+      includePaths: ['src/'],
+    })
+
+    expect(failMock).not.toHaveBeenCalled()
+  })
+
+  it('doesn\'t throw a fail in case of import from dirs excluded by params', () => {
+    const failMock = jest.fn()
+    const extraCommonDirNames = ['types']
+
+    // @ts-ignore
+    fs.readdirSync.mockImplementation((path: string) => {
+      if(path === 'src/') {
+        return ['ComponentA', 'ComponentB']
+      }
+
+      if(path === 'src/ComponentA') {
+        return ['index.tsx']
+      }
+
+      if(path === 'src/ComponentB') {
+        return ['index.tsx']
+      }
+    })
+
+    // @ts-ignore
+    fs.statSync.mockImplementation((path: string) => ({isDirectory: () => R.includes(
+      path,
+      ['src', 'src/ComponentA', 'src/ComponentB'],
+    )}))
+
+    // @ts-ignore
+    fs.existsSync.mockImplementation((path: string) => R.includes(
+      path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
+      [`src/${extraCommonDirNames[0]}/another-thing.ts`],
+    ))
+
+    // @ts-ignore
+    fs.readFileSync.mockImplementation((path: string) => {
+      if(R.includes('src/ComponentA/index.tsx', path) || R.includes('src/ComponentB/index.tsx', path)) {
+        return `
+          import anotherThing from '${extraCommonDirNames[0]}/another-thing'
+          import someThing from 'common/some-thing'
+
+          for(let i=0; i < 5; i++) {
+            console.log(i)
+          }
+        `
+      }
+    })
+
+    commonCodeDir({
+      baseImportPath: 'src/',
+
+      danger: {git: {
+        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+      }} as DangerDSLType,
+
+      extraCommonDirNames,
       fail        : failMock,
       includePaths: ['src/'],
     })

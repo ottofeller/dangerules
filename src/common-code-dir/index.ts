@@ -33,6 +33,7 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
 export const commonCodeDir = (params: {
   baseImportPath?: string
   danger: DangerDSLType
+  extraCommonDirNames?: Array<string>
   fail: (message: string) => void
   excludePaths?: Array<string>
   includePaths: Array<string>
@@ -56,11 +57,18 @@ export const commonCodeDir = (params: {
       R.countBy(R.identity),
 
       // TODO Check for existence of file (to exclude imports from node_modules)
-      // Only count import paths without "/common/"
-      R.filter<string>((innerPath: string) => R.any(
-        extension => fs.existsSync(`${innerPath.replace(/\/$/, '')}${extension}`),
-        ['.js', '.jsx', '.ts', '.tsx', '/index.js', '/index.jsx', '/index.ts', '/index.tsx'],
-      ) && !R.includes('/common/', innerPath)),
+      // Only count import paths without "/common/" and params.excludeDirNames
+      R.filter<string>(
+        (innerPath: string) => R.any(
+          extension => fs.existsSync(`${innerPath.replace(/\/$/, '')}${extension}`),
+          ['.js', '.jsx', '.ts', '.tsx', '/index.js', '/index.jsx', '/index.ts', '/index.tsx'],
+        ) &&
+
+        !R.any(
+          R.includes(R.__, innerPath),
+          R.append('/common/', R.map(dirName => `/${dirName}/`.replace(/\/\//, '/'), params.extraCommonDirNames || [])),
+        ),
+      ),
 
       R.flatten,
 
