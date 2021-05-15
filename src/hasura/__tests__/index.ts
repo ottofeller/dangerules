@@ -55,7 +55,7 @@ describe('Hasura rules', () => {
     it('throws a warn if there are Hasura migraions updates but no schema and codegen generated types updates', () => {
       const warnMock = jest.fn()
       const codegenFileExtension = 'generated.ts'
-      const codegenPaths = ['frontend/src/generated', 'frontend/src/SomeComponent/graphql']
+      const codegenPaths = ['generated', 'graphql']
       const hasuraMigrationsPath = 'hasura/migrations'
       const schemaPath = 'src/schema.json'
 
