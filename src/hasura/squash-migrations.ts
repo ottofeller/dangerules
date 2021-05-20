@@ -7,7 +7,7 @@ export const squashMigrations = (params: {
   maxMigrationsLimit: number
   warn: (message: string) => void
 }) => {
-  const migrationsFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/*`)
+  const migrationsFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`)
 
   if(!migrationsFiles.edited) {
     return
