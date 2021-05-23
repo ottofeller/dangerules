@@ -10,7 +10,7 @@ export const codegenMissing = (params: {
   schemaPath: string
   warn: (message: string) => void
 }) => {
-  const hasuraMigrationsEditedFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/*`)
+  const hasuraMigrationsEditedFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`)
   const isSchemaEdited = params.danger.git.fileMatch(`${params.schemaPath}`).edited
 
   if(!hasuraMigrationsEditedFiles.edited) {
@@ -21,7 +21,7 @@ export const codegenMissing = (params: {
     R.flatten,
 
     R.map(path => {
-      const files = params.danger.git.fileMatch(`${path}/*.${params.codegenFileExtension}`)
+      const files = params.danger.git.fileMatch(`${path}/**/*.${params.codegenFileExtension}`)
 
       if(!files.edited) {
         return []
