@@ -66,7 +66,7 @@ describe('Hasura rules', () => {
 
         danger: {git: {
           fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/*`) {
+            if(path === `${hasuraMigrationsPath}/**/*`) {
               return {
                 edited       : true,
                 getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
@@ -92,14 +92,14 @@ describe('Hasura rules', () => {
 
         danger: {git: {
           fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/*`) {
+            if(path === `${hasuraMigrationsPath}/**/*`) {
               return {
                 edited       : true,
                 getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
               }
             }
 
-            if(R.any(codegenPath => path === `${codegenPath}/*.${codegenFileExtension}`, codegenPaths)) {
+            if(R.any(codegenPath => path === `${codegenPath}/**/*.${codegenFileExtension}`, codegenPaths)) {
               return {
                 edited: true,
 
@@ -129,7 +129,7 @@ describe('Hasura rules', () => {
 
         danger: {git: {
           fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/*`) {
+            if(path === `${hasuraMigrationsPath}/**/*`) {
               return {
                 edited       : true,
                 getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
