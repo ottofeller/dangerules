@@ -12,9 +12,9 @@ export const bumpPackageVersion = async (params: {
       continue
     }
 
-    const packageJsonVersionChange = (await params.danger.git.JSONDiffForFile(`${includePath}/package.json`))?.version
+    const packageJson = await params.danger.git.JSONDiffForFile(`${includePath}/package.json`)
 
-    if(!packageJsonVersionChange || packageJsonVersionChange.after === packageJsonVersionChange.before) {
+    if(!packageJson || !packageJson.version || packageJson.version.after === packageJson.version.before) {
       params.fail(`The version in package.json must be updated in ${includePath}`)
     }
   }
