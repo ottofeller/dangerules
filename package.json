@@ -6,7 +6,6 @@
   "scripts": {
     "build": "rollup -c && tsc src/*.ts --declaration --allowJs --emitDeclarationOnly --esModuleInterop --outDir dist",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx ./src",
-    "prepublish": "build",
     "test": "jest --no-cache"
   },
   "author": "",
