@@ -29,7 +29,6 @@ test-project git(dev): npm link dangerules
 6. Run the danger to check the current branch relative to the dev branch
 ```
 test-project git(test-branch): npx danger local --dangerfile=./dangerfile.ts -b dev
-
 ```
 
-Now you can make changes in the dangerules, which will be available after running the `npm run build`. Run `npm danger ...` in the project again for tests.
+Now you can make changes in the `dangerules`, which will be available after running the `npm run build`. Run `npm danger ...` in the project again for tests.
