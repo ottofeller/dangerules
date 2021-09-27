@@ -66,7 +66,7 @@ export const commonCodeDir = (params: {
 
         !R.any(
           R.includes(R.__, innerPath),
-          R.append('/common/', R.map(dirName => `/${dirName}/`.replace(/\/\//, '/'), params.extraCommonDirNames || [])),
+          R.append('/common/', params.extraCommonDirNames || []),
         ),
       ),
 
@@ -100,11 +100,9 @@ export const commonCodeDir = (params: {
       R.flatten,
 
       // Find all js/jsx/ts/tsx files (including nested ones) in a dir
-      // Exclude unit tests or types, their imports should not be considered as common
+      // Exclude unit tests, their imports should not be considered as common
       R.map(includePath => R.filter(
-        innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath)) &&
-          R.isEmpty(R.match(/__tests__|types/i, innerPath)),
-
+        innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath)) && R.isEmpty(R.match(/__tests__/i, innerPath)),
         readdirNested({allFoundFiles: [], path: includePath}),
       )),
     )(params.includePaths)),
