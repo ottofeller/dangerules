@@ -23,20 +23,51 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
   return newAllFoundFiles
 }
 
-/*
-  Require a common code to be located in the common/ dir:
-  * Collect all imports from all files
-  * Resolve them to absolute paths
-  * Construct plain array of all imports
-  * If an import paths counts more than once and has no "/common/" string inluded, throw a fail().
-*/
+const parseFile = (params: {
+  filePath: string,
+  babelPlugins?: Array<string>
+  fail: (message: string) => void
+}) => {
+  let body: Array<babelTypes.Statement> = []
+  let plugins = ['jsx', 'typescript']
+
+  if(params.babelPlugins) {
+    plugins = [...plugins, ...params.babelPlugins]
+  }
+
+  try {
+    body = babelParse.parse(
+      (fs.readFileSync(params.filePath) || '').toString(),
+      {
+        errorRecovery: true,
+        plugins      : plugins as Array<babelParse.ParserPlugin>,
+        sourceType   : 'module',
+      },
+    ).program.body
+  } catch(error) {
+    if(error instanceof Error) {
+      params.fail(`${error.name} occured while parsing file:\n${error.message}\n${params.filePath}`)
+    }
+  }
+
+  return body
+}
+
+/**
+ * Require a common code to be located in the common/ dir:
+ * - Collect all imports from all files
+ * - Resolve them to absolute paths
+ * - Construct plain array of all imports
+ * - If an import paths counts more than once and has no "/common/" string inluded, throw a fail().
+ */
 export const commonCodeDir = (params: {
   baseImportPath?: string
-  danger: DangerDSLType
   extraCommonDirNames?: Array<string>
-  fail: (message: string) => void
-  excludePaths?: Array<string>
   includePaths: Array<string>
+  excludePaths?: Array<string>
+  babelPlugins?: Array<string>
+  danger: DangerDSLType
+  fail: (message: string) => void
 }) => {
   R.forEach(
     innerParams => {
@@ -91,18 +122,24 @@ export const commonCodeDir = (params: {
         // Get all babel statements of imports from AST
         R.filter((statement: babelTypes.Statement) => statement.type === 'ImportDeclaration'),
       )(
-        babelParse.parse(
-          (fs.readFileSync(path.resolve(params.baseImportPath || '', innerPath)) || '').toString(),
-          {errorRecovery: true, plugins: ['jsx', 'typescript'], sourceType: 'module'},
-        ).program.body),
-      ),
+        parseFile({
+          babelPlugins: params.babelPlugins,
+          fail        : params.fail,
+          filePath    : path.resolve(params.baseImportPath || '', innerPath),
+        }),
+      )),
 
       R.flatten,
 
       // Find all js/jsx/ts/tsx files (including nested ones) in a dir
       // Exclude unit tests, their imports should not be considered as common
+      // Exclude node_modules folders
+      // Exclude path that include excludePath string
       R.map(includePath => R.filter(
-        innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath)) && R.isEmpty(R.match(/__tests__/i, innerPath)),
+        innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath))
+          && R.isEmpty(R.match(/__tests__/i, innerPath))
+          && R.isEmpty(R.match(/\/node_modules\//i, innerPath))
+          && R.isEmpty(R.filter(excludePath => R.includes(excludePath, innerPath), params.excludePaths || [])),
         readdirNested({allFoundFiles: [], path: includePath}),
       )),
     )(params.includePaths)),
