@@ -24,7 +24,7 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
 }
 
 const parseFile = (params: {
-  filePath: string,
+  filePath: string
   babelPlugins?: Array<string>
   fail: (message: string) => void
 }) => {
