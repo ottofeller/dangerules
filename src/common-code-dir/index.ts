@@ -25,28 +25,27 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
 
 const parseFile = (params: {
   filePath: string
-  babelPlugins?: Array<string>
+  babelPlugins?: Array<babelParse.ParserPlugin>
   fail: (message: string) => void
 }) => {
   let body: Array<babelTypes.Statement> = []
-  let plugins = ['jsx', 'typescript']
-
-  if(params.babelPlugins) {
-    plugins = [...plugins, ...params.babelPlugins]
-  }
+  const plugins: Array<babelParse.ParserPlugin> = ['jsx', 'typescript', ...params.babelPlugins || []]
 
   try {
     body = babelParse.parse(
       (fs.readFileSync(params.filePath) || '').toString(),
+
       {
         errorRecovery: true,
-        plugins      : plugins as Array<babelParse.ParserPlugin>,
+        plugins      : plugins,
         sourceType   : 'module',
       },
     ).program.body
   } catch(error) {
     if(error instanceof Error) {
       params.fail(`${error.name} occured while parsing file:\n${error.message}\n${params.filePath}`)
+    }else{
+      params.fail(`Error happened: ${error}`)
     }
   }
 
@@ -65,7 +64,7 @@ export const commonCodeDir = (params: {
   extraCommonDirNames?: Array<string>
   includePaths: Array<string>
   excludePaths?: Array<string>
-  babelPlugins?: Array<string>
+  babelPlugins?: Array<babelParse.ParserPlugin>
   danger: DangerDSLType
   fail: (message: string) => void
 }) => {
