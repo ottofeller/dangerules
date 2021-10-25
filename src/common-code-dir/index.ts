@@ -29,7 +29,6 @@ const parseFile = (params: {
   fail: (message: string) => void
 }) => {
   let body: Array<babelTypes.Statement> = []
-  const plugins: Array<babelParse.ParserPlugin> = ['jsx', 'typescript', ...params.babelPlugins || []]
 
   try {
     body = babelParse.parse(
@@ -37,7 +36,7 @@ const parseFile = (params: {
 
       {
         errorRecovery: true,
-        plugins      : plugins,
+        plugins      : ['jsx', 'typescript', ...params.babelPlugins || []],
         sourceType   : 'module',
       },
     ).program.body
