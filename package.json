@@ -1,10 +1,10 @@
 {
   "name": "@ottofeller/dangerules",
-  "version": "0.5.10",
+  "version": "0.6.0",
   "description": "A set of Danger.js rules common applied in OttoFeller projects.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rollup -c && tsc src/*.ts --declaration --allowJs --emitDeclarationOnly --esModuleInterop --outDir dist",
+    "build": "tsc",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx ./src",
     "test": "jest --no-cache"
   },
@@ -30,15 +30,11 @@
     "@babel/preset-env": "7.13.10",
     "@babel/preset-typescript": "7.13.0",
     "@ottofeller/eslint-config-ottofeller": "0.8.2",
-    "@rollup/plugin-commonjs": "17.1.0",
-    "@rollup/plugin-node-resolve": "11.2.0",
-    "@rollup/plugin-typescript": "8.2.0",
     "@types/jest": "26.0.21",
     "babel-jest": "26.6.3",
     "babel-plugin-module-resolver": "4.1.0",
     "babel-preset-node": "5.1.1",
     "eslint": "7.22.0",
-    "rollup": "2.42.1",
     "ts-jest": "26.5.4",
     "tslib": "2.1.0",
     "typescript": "4.2.3"
