@@ -23,34 +23,6 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
   return newAllFoundFiles
 }
 
-const parseFile = (params: {
-  filePath: string
-  babelPlugins?: Array<babelParse.ParserPlugin>
-  fail: (message: string) => void
-}) => {
-  let body: Array<babelTypes.Statement> = []
-
-  try {
-    body = babelParse.parse(
-      (fs.readFileSync(params.filePath) || '').toString(),
-
-      {
-        errorRecovery: true,
-        plugins      : ['jsx', 'typescript', ...params.babelPlugins || []],
-        sourceType   : 'module',
-      },
-    ).program.body
-  } catch(error) {
-    if(error instanceof Error) {
-      params.fail(`${error.name} occured while parsing file:\n${error.message}\n${params.filePath}`)
-    }else{
-      params.fail(`Error happened: ${error}`)
-    }
-  }
-
-  return body
-}
-
 /**
  * Require a common code to be located in the common/ dir:
  * - Collect all imports from all files
@@ -102,6 +74,7 @@ export const commonCodeDir = (params: {
       R.flatten,
 
       R.map(innerPath => R.compose<
+        string,
         Array<babelTypes.Statement>,
         Array<babelTypes.Statement>,
         Array<string | undefined>,
@@ -119,13 +92,30 @@ export const commonCodeDir = (params: {
 
         // Get all babel statements of imports from AST
         R.filter((statement: babelTypes.Statement) => statement.type === 'ImportDeclaration'),
-      )(
-        parseFile({
-          babelPlugins: params.babelPlugins,
-          fail        : params.fail,
-          filePath    : path.resolve(params.baseImportPath || '', innerPath),
-        }),
-      )),
+
+        // Parse files with Babel
+        (filePath: string) => {
+          try {
+            return babelParse.parse(
+              (fs.readFileSync(filePath) || '').toString(),
+
+              {
+                errorRecovery: true,
+                plugins      : ['jsx', 'typescript', ...params.babelPlugins || []],
+                sourceType   : 'module',
+              },
+            ).program.body
+          } catch(error) {
+            if(error instanceof Error) {
+              params.fail(`${error.name} occured while parsing file:\n${error.message}\n${filePath}`)
+            }else{
+              params.fail(`Error happened: ${error}`)
+            }
+          }
+
+          return []
+        },
+      )(innerPath)),
 
       R.flatten,
 
