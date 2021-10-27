@@ -4,7 +4,7 @@
   "description": "A set of Danger.js rules common applied in OttoFeller projects.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c && tsc src/*.ts --declaration --allowJs --emitDeclarationOnly --esModuleInterop --outDir dist",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx ./src",
     "test": "jest --no-cache"
   },
