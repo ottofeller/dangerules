@@ -5,6 +5,10 @@ export const bumpPackageVersion = async (params: {
   fail: (message: string) => void
   includePaths: Array<string>
 }) => {
+  if(!/^(master|main)$/.test(params.danger.github.pr.base.ref)) {
+    return
+  }
+  
   // eslint-disable-next-line fp/no-loops
   for(const includePath of params.includePaths) {
     // If there are no edits in the includePath the version should not be bumped
