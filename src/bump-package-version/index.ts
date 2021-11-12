@@ -1,11 +1,20 @@
 import {DangerDSLType} from 'danger'
 
+/**
+ * Checks all @includePaths and in case of presence of edited files 
+ * requires version in `package.json` to be updated.
+ * Parameter @restrictToBranches defines branches to run the check for.
+ * If the parameter is empty the branch is not validated.
+ */
 export const bumpPackageVersion = async (params: {
   danger: DangerDSLType
   fail: (message: string) => void
   includePaths: Array<string>
+  restrictToBranches?: Array<string>
 }) => {
-  if(!/^(master|main)$/.test(params.danger.github.pr.base.ref)) {
+  if(!params.restrictToBranches ||
+    !params.restrictToBranches.includes(params.danger.github.pr.base.ref)
+  ) {
     return
   }
   
