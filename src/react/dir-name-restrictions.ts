@@ -38,9 +38,9 @@ export const dirNameRestrictions = (params: {
 
         try {
           isReactComponent = readFileSync(`${path}/index.tsx`, {encoding: 'utf8', flag: 'r'}).match(/\= memo\(/gi)
-        } catch(error) {
+        } catch(error: any) {
           // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-          if(error.code === 'ENOENT') {
+          if(error?.code === 'ENOENT') {
             isReactComponent = false
           }
         }
