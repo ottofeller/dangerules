@@ -10,9 +10,9 @@ export const bumpPackageVersion = async (params: {
   danger: DangerDSLType
   fail: (message: string) => void
   includePaths: Array<string>
-  restrictToBranches?: Array<string>
+  restrictToBranches: Array<string>
 }) => {
-  if(!params.restrictToBranches?.includes(params.danger.github.pr.base.ref)) {
+  if(!params.restrictToBranches.includes(params.danger.github.pr.base.ref)) {
     return
   }
   
