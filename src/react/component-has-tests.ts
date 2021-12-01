@@ -64,16 +64,16 @@ export const componentHasTests = (params: {
           return
         }
 
-        if(!testFile.match(RegExp(`import {${path}} from \'../index\'`, 'g'))) {
+        if(!testFile.includes(`import {${dirName}} from '../index'`)) {
           params.fail(`The test file for component ${path} does not contain the component import`)
         }
 
-        if(!testFile.match(RegExp(`describe('${path}', () => {,`, 'g'))) {
-          params.fail(`The test file for component ${path} does not contain "describe" block with the component name`)
+        if(!testFile.includes(`describe('${dirName}', () => {`)) {
+          params.fail(`The test file for component ${path} does not contain a "describe" block with the component name`)
         }
 
-        if(!testFile.match(/it\('renders properly', \(\) => \{/g)) {
-          params.fail(`The test file for component ${path} does check proper render`)
+        if(!testFile.includes('it(\'renders properly\', () => {')) {
+          params.fail(`The test file for component ${path} does not contain a check for proper render`)
         }
       }
     }),
@@ -82,11 +82,11 @@ export const componentHasTests = (params: {
 
     R.map(
       R.compose(
-        (file: string) => params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
-          params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
         R.join('/'),
         R.slice(0, -1),
         R.split('/'),
+        (file: string) => params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
+          params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
       ),
     ),
 
