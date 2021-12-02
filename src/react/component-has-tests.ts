@@ -4,17 +4,22 @@ import {readFileSync} from 'fs'
 
 /**
  * Finds React components within a project and checks them form test coverage.
- * A component shall have `__tests__` folder with `index.tsx` file.
+ * A component shall have `__tests__` folder with `index.tsx` (or other if input) file.
  * The test file is searched for the following statements:
  * - component import in form `import {ComponentName} from '../index'`
- * - `describe('ComponentName', () => {`
- * - `it('renders properly', () => {`
+ * - `describe('...` block
+ * @param danger Dnager instance
+ * @param fail Danger fail function
+ * @param excludePaths paths to exclude
+ * @param includePaths paths to include
+ * @param testFile name of file to search for within `__tests__` folder (`index.tsx` if not input)
  */
 export const componentHasTests = (params: {
   danger: DangerDSLType
   excludePaths?: Array<string>
   fail: (message: string) => void
   includePaths: Array<string>
+  testFile?: string
 }) => {
   R.compose<
     Array<string>,
@@ -48,11 +53,12 @@ export const componentHasTests = (params: {
       }
 
       if(isReactComponent) {
-        let testFile
+        const testFile = params.testFile || 'index.tsx'
+        let testFileContent
 
         try {
-          testFile = readFileSync(
-            `${path}/__tests__/index.tsx`,
+          testFileContent = readFileSync(
+            `${path}/__tests__/${testFile}`,
             {encoding: 'utf8', flag: 'r'},
           )
         } catch(error: any) {
@@ -64,16 +70,12 @@ export const componentHasTests = (params: {
           return
         }
 
-        if(!testFile.includes(`import {${dirName}} from '../index'`)) {
+        if(!testFileContent.includes(`import {${dirName}} from '../index'`)) {
           params.fail(`The test file for component ${path} does not contain the component import`)
         }
 
-        if(!testFile.includes(`describe('${dirName}', () => {`)) {
+        if(!testFileContent.includes('describe(')) {
           params.fail(`The test file for component ${path} does not contain a "describe" block with the component name`)
-        }
-
-        if(!testFile.includes('it(\'renders properly\', () => {')) {
-          params.fail(`The test file for component ${path} does not contain a check for proper render`)
         }
       }
     }),
