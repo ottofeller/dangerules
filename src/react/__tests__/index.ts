@@ -1,12 +1,13 @@
+/* eslint-disable max-lines */
 import * as fs from 'fs'
+import {componentHasTests, dirNameRestrictions} from '../index'
 import {DangerDSLType} from 'danger'
-import {dirNameRestrictions} from '../index'
 jest.mock('fs')
 
 describe('React rules', () => {
-  describe('Restrictions on the dir name', () => {
-    const failMock = jest.fn()
+  const failMock = jest.fn()
 
+  describe('Restrictions on the dir name', () => {
     it('requires component\'s dir name to have first letter capitalized', () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
@@ -254,6 +255,84 @@ describe('React rules', () => {
       })
 
       expect(failMock).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  describe('Check for test coverage', () => {
+    const fsMock = (path: string) => {
+      switch(path){
+      case'src/ComponentWithInvalidTest/__tests__/index.tsx': 
+        return 'import {SomeOtherStuff} from \'../index\''
+      case'src/ComponentWithInvalidTest/index.tsx':
+        return 'const ComponentWithInvalidTest = memo(function NewComponent() { return null })'
+      case'src/ComponentWithNoDescribeInTest/__tests__/index.tsx':
+        return 'import {ComponentWithNoDescribeInTest} from \'../index\''
+      case'src/ComponentWithNoDescribeInTest/index.tsx':
+        return 'const ComponentWithNoDescribeInTest = memo(function NewComponent() { return null })'
+      case'src/ComponentWithNoImportInTest/__tests__/index.tsx':
+        return 'describe(\''
+      case'src/ComponentWithNoImportInTest/index.tsx':
+        return 'const ComponentWithNoImportInTest = memo(function NewComponent() { return null })'
+      case'src/ComponentWithoutTestFile/index.tsx':
+        return 'const SomeCompnent = memo(function NewComponent() { return null })'
+      case'src/ComponentWithValidTest/__tests__/index.tsx':
+        return 'import {ComponentWithValidTest} from \'../index\'/ndescribe(\''
+      case'src/ComponentWithValidTest/index.tsx':
+        return 'const ComponentWithValidTest = memo(function NewComponent() { return null })'
+
+      default: {
+        let error: Error & { code?: string } = new Error()
+        error.code = 'ENOENT'
+        throw error
+      }}
+    }
+
+    const ruleParams = (componentName: string) => ({
+      danger: {
+        git: {
+          created_files: [`src/${componentName}/index.tsx`],
+          fileMatch    : (file: string) => ({
+            getKeyedPaths: () => ({created: [''], edited: [file]}),
+          }),
+          modified_files: [] as Array<string>,
+        },
+      } as DangerDSLType,
+
+      fail        : failMock,
+      includePaths: ['src'],
+    })
+
+    beforeEach(() => {
+      failMock.mockReset()
+      jest.resetModules()
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation(fsMock)
+    })
+
+    it('does not fail on a React component with basic tests', () => {
+      componentHasTests(ruleParams('ComponentWithValidTest'))
+      expect(failMock).not.toHaveBeenCalled()
+    })
+
+    it('fails on a React component with no test file inside __tests__ folder', () => {
+      componentHasTests(ruleParams('ComponentWithoutTestFile'))
+      expect(failMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('fails on a React component with a test file that has no component import', () => {
+      componentHasTests(ruleParams('ComponentWithNoImportInTest'))
+      expect(failMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('fails on a React component with a test file that has no describe block', () => {
+      componentHasTests(ruleParams('ComponentWithNoDescribeInTest'))
+      expect(failMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('fails twice on a React component with a test file that has no component import and no describe block', () => {
+      componentHasTests(ruleParams('ComponentWithInvalidTest'))
+      expect(failMock).toHaveBeenCalledTimes(2)
     })
   })
 })
