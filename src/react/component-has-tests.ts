@@ -82,6 +82,7 @@ export const componentHasTests = (params: {
 
     R.uniq,
 
+    // Strip the file from a path /some/path/somefile.tsx > /some/path
     R.map(
       R.compose(
         R.join('/'),
@@ -93,6 +94,7 @@ export const componentHasTests = (params: {
       ),
     ),
 
+    // Only work with included paths, avoid excluded paths
     R.reject(
       R.anyPass([
         ...R.map(includePath => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
