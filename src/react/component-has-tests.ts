@@ -52,31 +52,33 @@ export const componentHasTests = (params: {
         }
       }
 
-      if(isReactComponent) {
-        const testFile = params.testFile || 'index.tsx'
-        let testFileContent
+      if(!isReactComponent) {
+        return false
+      }
 
-        try {
-          testFileContent = readFileSync(
-            `${path}/__tests__/${testFile}`,
-            {encoding: 'utf8', flag: 'r'},
-          )
-        } catch(error: any) {
-          // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-          if(error?.code === 'ENOENT') {
-            params.fail(`No test file found for component ${path}`)
-          }
+      const testFile = params.testFile || 'index.tsx'
+      let testFileContent
 
-          return
+      try {
+        testFileContent = readFileSync(
+          `${path}/__tests__/${testFile}`,
+          {encoding: 'utf8', flag: 'r'},
+        )
+      } catch(error: any) {
+        // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
+        if(error?.code === 'ENOENT') {
+          params.fail(`No test file found for component ${path}`)
         }
 
-        if(!testFileContent.includes(`import {${dirName}} from '../index'`)) {
-          params.fail(`The test file for component ${path} does not contain the component import`)
-        }
+        return
+      }
 
-        if(!testFileContent.includes('describe(')) {
-          params.fail(`The test file for component ${path} does not contain a "describe" block with the component name`)
-        }
+      if(!testFileContent.includes(`import {${dirName}} from '../index'`)) {
+        params.fail(`The test file for component ${path} does not contain the component import`)
+      }
+
+      if(!testFileContent.includes('describe(')) {
+        params.fail(`The test file for component ${path} does not contain a "describe" block with the component name`)
       }
     }),
 
