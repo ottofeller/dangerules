@@ -87,6 +87,7 @@ export const componentHasTests = (params: {
         R.join('/'),
         R.slice(0, -1),
         R.split('/'),
+
         (file: string) => params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
           params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
       ),
