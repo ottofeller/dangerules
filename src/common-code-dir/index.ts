@@ -23,13 +23,22 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
   return newAllFoundFiles
 }
 
-/*
-Require a common code to be located in the common/ dir:
- - Collect all imports from all files
- - Resolve them to absolute paths
- - Construct plain array of all imports
- - If an import paths counts more than once and has no "/common/" string inluded, throw a fail().
-*/
+/**
+ * Require common code to be located in the `common/` dir:
+ * - Collect all imports from all files
+ * - Resolve them to absolute paths
+ * - Construct plain array of all imports
+ * - If an import paths counts more than once and has no "/common/" string included, throw a fail().
+
+ * @param danger Dnager instance
+ * @param fail Danger fail function
+ * @param includePaths paths to include
+ * @param excludePaths paths to exclude
+ * @param baseImportPath base path for imports resolution
+ * @param extraCommonDirNames extra folders for common code
+ * @param babelPlugins babel plugins used in code parsing 
+ * (`jsx` and `typescript` are included by default)
+ */
 export const commonCodeDir = (params: {
   baseImportPath?: string
   extraCommonDirNames?: Array<string>

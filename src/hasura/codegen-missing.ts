@@ -1,7 +1,17 @@
 import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 
-// Disallow a file extenstion in the selected dirs
+/**
+ * Searches for Hasura migrations in edited files.
+ * If present, warns in ccase of no changes in codegen files and `schema.json`.
+ * 
+ * @param danger Dnager instance
+ * @param warn Danger warn function
+ * @param hasuraMigrationsPath paths to Hasura migrations
+ * @param codegenPaths paths to codegen files
+ * @param schemaPath path to `schema.json` file
+ * @param codegenFileExtension codegen file extension
+ */
 export const codegenMissing = (params: {
   codegenFileExtension: string
   codegenPaths: Array<string>
@@ -10,10 +20,10 @@ export const codegenMissing = (params: {
   schemaPath: string
   warn: (message: string) => void
 }) => {
-  const hasuraMigrationsEditedFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`)
+  const hasuraMigrationsEditedFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`).edited
   const isSchemaEdited = params.danger.git.fileMatch(`${params.schemaPath}`).edited
 
-  if(!hasuraMigrationsEditedFiles.edited) {
+  if(!hasuraMigrationsEditedFiles) {
     return
   }
 
