@@ -9,6 +9,18 @@ Checks all paths as input in `includePaths` parameter and in case of presence of
 
 PS. The rule is intended to be used with PRs to a *main/master* branch in order to keep the version up to date.
 
+```typescript
+import {bumpPackageVersion} from '@ottofeller/dangerules'
+import {danger, fail} from 'danger'
+
+bumpPackageVersion.bumpPackageVersion({
+  danger,
+  fail,
+  includePaths      : ['.'],
+  restrictToBranches: ['main'],
+})
+```
+
 ## common-code-dir
 Requires common code to be located in the `common/` dir:
 - Collect all imports from all files
@@ -16,14 +28,77 @@ Requires common code to be located in the `common/` dir:
 - Construct plain array of all imports
 - If an import paths count more than once and has no "/common/" string included, throw a fail().
 
+```typescript
+import {commonCodeDir} from '@ottofeller/dangerules'
+import {danger, fail} from 'danger'
+
+commonCodeDir.commonCodeDir({
+  baseImportPath     : `${process.cwd()}/src`,
+  danger,
+  extraCommonDirNames: ['/types'],
+  fail,
+  includePaths       : [`${process.cwd()}/src`],
+})
+```
+
 ## hasura
 ### codegen-missing
 Searches for Hasura migrations in edited files. If present, warns in case of no changes in codegen files and `schema.json`.
+
+```typescript
+import {hasura} from '@ottofeller/dangerules'
+import {danger, warn} from 'danger'
+
+hasura.codegenMissing({
+  codegenFileExtension: 'ts',
+  codegenPaths        : ['generated'],
+  danger,
+  hasuraMigrationsPath: '../hasura/migrations',
+  schemaPath          : 'schema.json',
+  warn,
+})
+```
+
 ### squash-migrations
 Searches for Hasura migrations in edited files. If present, warns if the quantity of migration files is beyond specified limit.
+
+```typescript
+import {hasura} from '@ottofeller/dangerules'
+import {danger, warn} from 'danger'
+
+hasura.squashMigrations({
+  danger,
+  hasuraMigrationsPath: '../hasura/migrations',
+  maxMigrationsLimit  : 8,
+  warn,
+})
+```
+
 ## nextjs
 ### disallow-extension-in-dirs
-Disallow a file extension in the selected folders and shows a required extension for the files.
+Disallows a file extension in the selected folders and shows a required extension for the files.
+
+```typescript
+import {nextjs} from '@ottofeller/dangerules'
+import {danger, fail} from 'danger'
+
+nextjs.disallowExtensionInDirs({
+  danger,
+  excludePaths    : ['api/', 'types/'],
+  extension       : 'ts',
+  fail,
+  includePaths    : ['src/'],
+  requireExtension: 'tsx',
+})
+
+nextjs.disallowExtensionInDirs({
+  danger,
+  extension       : 'tsx',
+  fail,
+  includePaths    : ['api/', 'types/'],
+  requireExtension: 'ts',
+})
+```
 
 ## react
 ### component-has-tests
@@ -31,8 +106,18 @@ Finds React components within a project (as an `index.tsx` file within a CamelCa
 - component import in form `import {ComponentName} from '../index'`
 - `describe('...` block
 
-### dir-name-restrictions
+```typescript
+import {react} from '@ottofeller/dangerules'
+import {danger, fail} from 'danger'
 
+react.componentHasTests({
+  danger,
+  fail,
+  includePaths: ['src/'],
+})
+```
+
+### dir-name-restrictions
 For all created/modified files traverses up through all containing folders and requires the following rules to apply:
 - a React Component dir name must have first letter capitalized;
 - a React Component dir name must be in camel case;
@@ -40,6 +125,17 @@ For all created/modified files traverses up through all containing folders and r
 but instead should be in dash case;
 - Non-component dir name must have first letter in lower case;
 - Use "-" (not "_") in non-component dir names.
+
+```typescript
+import {react} from '@ottofeller/dangerules'
+import {danger, fail} from 'danger'
+
+react.dirNameRestrictions({
+  danger,
+  fail,
+  includePaths: ['src/'],
+})
+```
 
 # Local development and testing
 
