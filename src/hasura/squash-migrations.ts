@@ -1,6 +1,14 @@
 import {DangerDSLType} from 'danger'
 
-// Disallow a file extenstion in the selected dirs
+/**
+ * Searches for Hasura migrations in edited files.
+ * If present, warns if the quantity of migration files to be within specified limit.
+ * 
+ * @param danger Dnager instance
+ * @param warn Danger warn function
+ * @param hasuraMigrationsPath paths to Hasura migrations
+ * @param maxMigrationsLimit maximum allowed migration files quantity
+ */
 export const squashMigrations = (params: {
   danger: DangerDSLType
   hasuraMigrationsPath: string

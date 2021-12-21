@@ -2,6 +2,20 @@ import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
 
+/**
+ * For all created/modified files traverses up through all containing folders 
+ * and requires the following rules to apply:
+ * - a React Component dir name must have first letter capitalized;
+ * - a React Component dir name must be in camel case;
+ * - Non-component and Next.js route dir names should not be in camel case, 
+ * but instead should be in dash case;
+ * - Non-component dir name must have first letter in lower case;
+ * - Use "-" (not "_") in non-component dir names.
+ * @param danger Dnager instance
+ * @param fail Danger fail function
+ * @param excludePaths paths to exclude
+ * @param includePaths paths to include
+ */
 export const dirNameRestrictions = (params: {
   danger: DangerDSLType
   excludePaths?: Array<string>
