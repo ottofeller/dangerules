@@ -1,0 +1,58 @@
+name: Deploy Latest Release
+
+on:
+  release:
+    types: [published, unpublished]
+    branches:
+      - main
+
+jobs:
+  set-commit-hash:
+    name: Store the hash of the commit
+    runs-on: ubuntu-latest
+    outputs:
+      commit_hash: ${{ steps.commit-hash.outputs.commit_hash }}
+    steps:
+    - id: commit-hash
+      uses: ottofeller/latest-release-commit-hash-action@main
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  lint:
+    name: Lint the code
+    needs: set-commit-hash
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
+    - uses: ottofeller/npm-run@main
+      with:
+        node-version: 16
+        command: npm run lint
+
+  test:
+    name: Test the code
+    needs: set-commit-hash
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
+    - uses: ottofeller/npm-run@main
+      with:
+        node-version: 16
+        command: npm run test
+
+  publish-npm:
+    name: Publish the release to NPM
+    needs: [set-commit-hash, lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ottofeller/publish-npm-gh-action@main
+        with:
+          ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
+          registry-url: https://registry.npmjs.org/
+          npm-token: ${{ secrets.NPM_TOKEN }}
