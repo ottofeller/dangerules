@@ -56,3 +56,4 @@ jobs:
           ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
           registry-url: https://registry.npmjs.org/
           npm-token: ${{ secrets.NPM_TOKEN }}
+          include-build-step: true
