@@ -127,6 +127,10 @@ but instead should be in dash case;
 - Non-component dir name must have first letter in lower case;
 - Use "-" (not "_") in non-component dir names.
 
+Additional notes:
+- a React component is defined as a function expression wrapped with `memo`;
+- files within `__tests__` and `__mocks__` folders are ignored.
+
 ```typescript
 import {react} from '@ottofeller/dangerules'
 import {danger, fail} from 'danger'

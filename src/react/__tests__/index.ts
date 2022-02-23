@@ -5,26 +5,69 @@ import {DangerDSLType} from 'danger'
 jest.mock('fs')
 
 describe('React rules', () => {
+  const validReactComponent = 'const SomeComponent = memo(function NewComponent() { return null })'
+
   const failMock = jest.fn()
 
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
   describe('Restrictions on the dir name', () => {
+    ['__tests__', '__mocks__'].forEach(dirName => {
+      it(`does not check "${dirName}" folders`, () => {
+        const componentFilePath = 'src/another/Component/index.tsx'
+        const testFilePath = `src/another/Component/${dirName}/index.tsx`
+        
+        // @ts-ignore
+        fs.readFileSync.mockImplementation((path: string) => {
+          if(path === testFilePath || path === componentFilePath) {
+            return validReactComponent
+          }
+        })
+  
+        dirNameRestrictions({
+          danger: {git: {
+            created_files: [] as Array<string>,
+  
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
+  
+            modified_files: [testFilePath],
+          }} as DangerDSLType,
+  
+          fail        : failMock,
+          includePaths: ['src'],
+        })
+  
+        expect(failMock).not.toHaveBeenCalled()
+  
+        // Once per each path component, but not for "dirName"
+        expect(fs.readFileSync).toHaveBeenCalledTimes(3)
+      })
+    })
+
     it('requires component\'s dir name to have first letter capitalized', () => {
+      const invalidPathToReactComponent = 'src/component/index.tsx'
+      const validPathToReactComponent = 'src/another/Component/index.tsx'
+
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
-        if(path === 'src/component/index.tsx' || path === 'src/another/Component/index.tsx') {
-          return 'const SomeCompnent = memo(function NewComponent() { return null })'
+        if(path === invalidPathToReactComponent || path === validPathToReactComponent) {
+          return validReactComponent
         }
       })
 
       dirNameRestrictions({
         danger: {git: {
-          created_files: ['src/component/index.ts'],
+          created_files: [invalidPathToReactComponent],
 
           fileMatch: (file: string) => ({
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
 
-          modified_files: ['src/another/Component/index.ts'],
+          modified_files: [validPathToReactComponent],
         }} as DangerDSLType,
 
         fail        : failMock,
@@ -42,7 +85,7 @@ describe('React rules', () => {
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
 
-          modified_files: ['src/another/Component/index.ts'],
+          modified_files: [validPathToReactComponent],
         }} as DangerDSLType,
 
         fail        : failMock,
@@ -74,18 +117,25 @@ describe('React rules', () => {
     })
 
     it('requires component\'s dir name to be in camel case', () => {
+      const invalidPathToReactComponent = 'src/someComponent/index.tsx'
+      const validPathToReactComponent = 'src/another/SomeComponent/index.tsx'
+
       // @ts-ignore
-      fs.readFileSync.mockImplementation(() => 'const SomeCompnent = memo(function NewComponent() { return null })')
+      fs.readFileSync.mockImplementation((path: string) => {
+        if(path === invalidPathToReactComponent || path === validPathToReactComponent) {
+          return validReactComponent
+        }
+      })
 
       dirNameRestrictions({
         danger: {git: {
-          created_files: ['src/somComponent/index.ts'],
+          created_files: [invalidPathToReactComponent],
 
           fileMatch: (file: string) => ({
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
 
-          modified_files: ['src/another/SomeComponent/index.ts'],
+          modified_files: [validPathToReactComponent],
         }} as DangerDSLType,
 
         fail        : failMock,
@@ -95,13 +145,6 @@ describe('React rules', () => {
       expect(failMock).toHaveBeenCalled()
       failMock.mockReset()
 
-      // @ts-ignore
-      fs.readFileSync.mockImplementation((path: string) => {
-        if(path === 'src/another/SomeComponent/index.tsx') {
-          return 'const SomeCompnent = memo(function NewComponent() { return null })'
-        }
-      })
-
       dirNameRestrictions({
         danger: {git: {
           created_files: [''],
@@ -110,7 +153,7 @@ describe('React rules', () => {
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
 
-          modified_files: ['src/another/SomeComponent/index.ts'],
+          modified_files: [validPathToReactComponent],
         }} as DangerDSLType,
 
         fail        : failMock,
@@ -121,8 +164,6 @@ describe('React rules', () => {
     })
 
     it('requires non-component\'s dir name to be in dash case', () => {
-      failMock.mockReset()
-
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => '')
 
@@ -181,8 +222,6 @@ describe('React rules', () => {
     })
 
     it('requires non-component\'s dir name to be in lower case', () => {
-      failMock.mockReset()
-
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => '')
 
@@ -205,12 +244,10 @@ describe('React rules', () => {
     })
 
     it('applies restrictions only to files in includePaths, and not to files from excludePaths', () => {
-      failMock.mockReset()
-
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
         if(path === 'app/src/Some-Component/index.tsx') {
-          return 'const SomeCompnent = memo(function NewComponent() { return null })'
+          return validReactComponent
         }
       })
 
@@ -272,13 +309,13 @@ describe('React rules', () => {
       case'src/ComponentWithNoImportInTest/__tests__/index.tsx':
         return 'describe(\''
       case'src/ComponentWithNoImportInTest/index.tsx':
-        return 'const ComponentWithNoImportInTest = memo(function NewComponent() { return null })'
+        return validReactComponent
       case'src/ComponentWithoutTestFile/index.tsx':
-        return 'const SomeCompnent = memo(function NewComponent() { return null })'
+        return validReactComponent
       case'src/ComponentWithValidTest/__tests__/index.tsx':
-        return 'import {ComponentWithValidTest} from \'../index\'/ndescribe(\''
+        return 'import {ComponentWithValidTest} from \'../index\'\ndescribe(\''
       case'src/ComponentWithValidTest/index.tsx':
-        return 'const ComponentWithValidTest = memo(function NewComponent() { return null })'
+        return validReactComponent
 
       default: {
         let error: Error & { code?: string } = new Error()
@@ -303,8 +340,7 @@ describe('React rules', () => {
     })
 
     beforeEach(() => {
-      failMock.mockReset()
-      jest.resetModules()
+      jest.resetAllMocks()
 
       // @ts-ignore
       fs.readFileSync.mockImplementation(fsMock)
