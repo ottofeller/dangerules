@@ -1,4 +1,4 @@
-/* eslint-disable max-lines */
+/* eslint-disable max-lines -- too many tests, need those extra lines */
 import * as fs from 'fs'
 import * as R from 'ramda'
 import {commonCodeDir} from '../index'
@@ -11,13 +11,13 @@ describe('Common code dir rule', () => {
 
     // @ts-ignore
     fs.readdirSync.mockImplementation((path: string) => {
-      /*
+      /* Folder structure
         src/
           common/
             helpers/
               some-helper/
                 index.tsx
-              
+
               index.tsx
 
           ComponentA/
@@ -101,7 +101,7 @@ describe('Common code dir rule', () => {
       danger: {git: {
         fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
-      
+
       fail        : failMock,
       includePaths: ['src/'],
     })
@@ -229,7 +229,7 @@ describe('Common code dir rule', () => {
       danger: {git: {
         fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
       }} as DangerDSLType,
-      
+
       fail        : failMock,
       includePaths: ['src/'],
     })
@@ -237,7 +237,7 @@ describe('Common code dir rule', () => {
     expect(failMock).not.toHaveBeenCalled()
   })
 
-  it('doesn\'t throw a fail in case multiple imports from node_mmodules', () => {
+  it('doesn\'t throw a fail in case multiple imports from node_modules', () => {
     const failMock = jest.fn()
 
     // @ts-ignore

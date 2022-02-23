@@ -3,9 +3,9 @@ import {DangerDSLType} from 'danger'
 
 /**
  * Searches for Hasura migrations in edited files.
- * If present, warns in ccase of no changes in codegen files and `schema.json`.
- * 
- * @param danger Dnager instance
+ * If present, warns in case of no changes in codegen files and `schema.json`.
+ *
+ * @param danger Danger instance
  * @param warn Danger warn function
  * @param hasuraMigrationsPath paths to Hasura migrations
  * @param codegenPaths paths to codegen files
@@ -27,7 +27,7 @@ export const codegenMissing = (params: {
     return
   }
 
-  const codegenEditedFiles = R.compose<Array<string>, Array<Array<string>>, Array<string>>(
+  const codegenEditedFiles = R.compose<Array<Array<string>>, Array<Array<string>>, Array<string>>(
     R.flatten,
 
     R.map(path => {

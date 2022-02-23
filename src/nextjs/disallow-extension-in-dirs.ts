@@ -2,14 +2,14 @@ import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 
 /**
- * Disallow a file extension in the selected dirs 
+ * Disallow a file extension in the selected dirs
  * and provides a required extension for the files.
- * 
- * @param danger Dnager instance
+ *
+ * @param danger Danger instance
  * @param fail Danger fail function
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
- * @param extension not allowed estension
+ * @param extension not allowed extension
  * @param requireExtension required extension
  */
 export const disallowExtensionInDirs = (params: {
