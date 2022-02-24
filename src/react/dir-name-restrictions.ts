@@ -11,7 +11,7 @@ import {readFileSync} from 'fs'
  * but instead should be in dash case;
  * - Non-component dir name must have first letter in lower case;
  * - Use "-" (not "_") in non-component dir names.
- * @param danger Dnager instance
+ * @param danger Danger instance
  * @param fail Danger fail function
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
@@ -23,6 +23,7 @@ export const dirNameRestrictions = (params: {
   includePaths: Array<string>
 }) => {
   let checkedPaths: Array<string> = []
+  const excludeFolders = ['__tests__', '__mocks__']
 
   R.forEach(
     (file: string) => {
@@ -46,7 +47,7 @@ export const dirNameRestrictions = (params: {
           return
         }
 
-        if(dirName === '__tests__') {
+        if(excludeFolders.includes(dirName)) {
           return
         }
 
