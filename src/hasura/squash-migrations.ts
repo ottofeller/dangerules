@@ -3,8 +3,8 @@ import {DangerDSLType} from 'danger'
 /**
  * Searches for Hasura migrations in edited files.
  * If present, warns if the quantity of migration files to be within specified limit.
- * 
- * @param danger Dnager instance
+ *
+ * @param danger Danger instance
  * @param warn Danger warn function
  * @param hasuraMigrationsPath paths to Hasura migrations
  * @param maxMigrationsLimit maximum allowed migration files quantity

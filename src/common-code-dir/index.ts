@@ -30,13 +30,13 @@ const readdirNested = (params: {allFoundFiles: Array<string>, path: string}): Ar
  * - Construct plain array of all imports
  * - If an import paths counts more than once and has no "/common/" string included, throw a fail().
 
- * @param danger Dnager instance
+ * @param danger Danger instance
  * @param fail Danger fail function
  * @param includePaths paths to include
  * @param excludePaths paths to exclude
  * @param baseImportPath base path for imports resolution
  * @param extraCommonDirNames extra folders for common code
- * @param babelPlugins babel plugins used in code parsing 
+ * @param babelPlugins babel plugins used in code parsing
  * (`jsx` and `typescript` are included by default)
  */
 export const commonCodeDir = (params: {
@@ -56,7 +56,7 @@ export const commonCodeDir = (params: {
     },
 
     R.toPairs(R.compose<
-      Array<string>,
+      Array<Array<string>>,
       Array<Array<string>>,
       Array<string>,
       Array<Array<string>>,
@@ -83,7 +83,7 @@ export const commonCodeDir = (params: {
       R.flatten,
 
       R.map(innerPath => R.compose<
-        string,
+        Array<string>,
         Array<babelTypes.Statement>,
         Array<babelTypes.Statement>,
         Array<string | undefined>,
@@ -116,7 +116,7 @@ export const commonCodeDir = (params: {
             ).program.body
           } catch(error) {
             if(error instanceof Error) {
-              params.fail(`${error.name} occured while parsing file:\n${error.message}\n${filePath}`)
+              params.fail(`${error.name} ocurred while parsing file:\n${error.message}\n${filePath}`)
             }else{
               params.fail(`Error happened: ${error}`)
             }
@@ -125,14 +125,13 @@ export const commonCodeDir = (params: {
           return []
         },
       )(innerPath)),
-
       R.flatten,
 
       // Find all js/jsx/ts/tsx files (including nested ones) in a dir
       // Exclude unit tests, their imports should not be considered as common
       // Exclude node_modules folders
       // Exclude path that include excludePath string
-      R.map(includePath => R.filter(
+      R.map<string, Array<string>>(includePath => R.filter(
         innerPath => !R.isEmpty(R.match(/(js|jsx|ts|tsx)$/i, innerPath))
           && R.isEmpty(R.match(/__tests__/i, innerPath))
           && R.isEmpty(R.match(/\/node_modules\//i, innerPath))

@@ -3,11 +3,11 @@ import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
 
 /**
- * For all created/modified files traverses up through all containing folders 
+ * For all created/modified files traverses up through all containing folders
  * and requires the following rules to apply:
  * - a React Component dir name must have first letter capitalized;
  * - a React Component dir name must be in camel case;
- * - Non-component and Next.js route dir names should not be in camel case, 
+ * - Non-component and Next.js route dir names should not be in camel case,
  * but instead should be in dash case;
  * - Non-component dir name must have first letter in lower case;
  * - Use "-" (not "_") in non-component dir names.
@@ -27,13 +27,17 @@ export const dirNameRestrictions = (params: {
 
   R.forEach(
     (file: string) => {
-      const dirs = R.compose<string, Array<string>, Array<string>>(R.init, R.split('/'))(
+      const dirs = R.compose<Array<string>, Array<string>, Array<string>>(R.init, R.split('/'))(
         params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
           params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
       )
 
       R.forEach(index => {
-        const path = R.compose(R.join('/'), R.slice(0, index))(dirs)
+        const path = R.compose<Array<Array<string>>, Array<string>, string>(
+          R.join('/'),
+          R.slice(0, index),
+        )(dirs)
+
         const dirName = dirs[index - 1]
         const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
         const isDirNameCamelCased = dirName.match(/[a-z][A-Z]/g)
@@ -53,6 +57,7 @@ export const dirNameRestrictions = (params: {
 
         try {
           isReactComponent = readFileSync(`${path}/index.tsx`, {encoding: 'utf8', flag: 'r'}).match(/\= memo\(/gi)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
         } catch(error: any) {
           // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
           if(error?.code === 'ENOENT') {
@@ -69,7 +74,7 @@ export const dirNameRestrictions = (params: {
         }
 
         if(!isReactComponent && isDirNameCamelCased && !isNextjsRouteParameterDir) {
-          // eslint-disable-next-line max-len
+          // eslint-disable-next-line max-len -- Need this long fail description
           params.fail(`Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`)
         }
 

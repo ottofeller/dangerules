@@ -1,4 +1,4 @@
-/* eslint-disable max-lines */
+/* eslint-disable max-lines -- too many tests, need those extra lines */
 import * as fs from 'fs'
 import {componentHasTests, dirNameRestrictions} from '../index'
 import {DangerDSLType} from 'danger'
@@ -18,31 +18,31 @@ describe('React rules', () => {
       it(`does not check "${dirName}" folders`, () => {
         const componentFilePath = 'src/another/Component/index.tsx'
         const testFilePath = `src/another/Component/${dirName}/index.tsx`
-        
+
         // @ts-ignore
         fs.readFileSync.mockImplementation((path: string) => {
           if(path === testFilePath || path === componentFilePath) {
             return validReactComponent
           }
         })
-  
+
         dirNameRestrictions({
           danger: {git: {
             created_files: [] as Array<string>,
-  
+
             fileMatch: (file: string) => ({
               getKeyedPaths: () => ({created: [''], edited: [file]}),
             }),
-  
+
             modified_files: [testFilePath],
           }} as DangerDSLType,
-  
+
           fail        : failMock,
           includePaths: ['src'],
         })
-  
+
         expect(failMock).not.toHaveBeenCalled()
-  
+
         // Once per each path component, but not for "dirName"
         expect(fs.readFileSync).toHaveBeenCalledTimes(3)
       })
@@ -298,7 +298,7 @@ describe('React rules', () => {
   describe('Check for test coverage', () => {
     const fsMock = (path: string) => {
       switch(path){
-      case'src/ComponentWithInvalidTest/__tests__/index.tsx': 
+      case'src/ComponentWithInvalidTest/__tests__/index.tsx':
         return 'import {SomeOtherStuff} from \'../index\''
       case'src/ComponentWithInvalidTest/index.tsx':
         return 'const ComponentWithInvalidTest = memo(function NewComponent() { return null })'
@@ -318,7 +318,7 @@ describe('React rules', () => {
         return validReactComponent
 
       default: {
-        let error: Error & { code?: string } = new Error()
+        let error: Error & {code?: string} = new Error()
         error.code = 'ENOENT'
         throw error
       }}

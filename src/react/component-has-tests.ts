@@ -8,7 +8,7 @@ import {readFileSync} from 'fs'
  * The test file is searched for the following statements:
  * - component import in form `import {ComponentName} from '../index'`
  * - `describe('...` block
- * @param danger Dnager instance
+ * @param danger Danger instance
  * @param fail Danger fail function
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
@@ -22,14 +22,14 @@ export const componentHasTests = (params: {
   testFile?: string
 }) => {
   R.compose<
-    Array<string>,
+    Array<Array<string>>,
     Array<string>,
     Array<string>,
     Array<string>,
     Array<string>
   >(
     R.forEach<string>(path => {
-      const dirName = R.compose<string, Array<string>, string>(
+      const dirName = R.compose<Array<string>, Array<string>, string>(
         R.last,
         R.split('/'),
       )(path)
@@ -45,6 +45,7 @@ export const componentHasTests = (params: {
           `${path}/index.tsx`,
           {encoding: 'utf8', flag: 'r'},
         ).match(/\= memo\(/gi)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
       } catch(error: any) {
         // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
         if(error?.code === 'ENOENT') {
@@ -64,6 +65,7 @@ export const componentHasTests = (params: {
           `${path}/__tests__/${testFile}`,
           {encoding: 'utf8', flag: 'r'},
         )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
       } catch(error: any) {
         // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
         if(error?.code === 'ENOENT') {
@@ -86,7 +88,7 @@ export const componentHasTests = (params: {
 
     // Strip the file from a path /some/path/somefile.tsx > /some/path
     R.map(
-      R.compose(
+      R.compose<Array<string>, string, Array<string>, Array<string>, string>(
         R.join('/'),
         R.slice(0, -1),
         R.split('/'),

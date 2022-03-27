@@ -26,31 +26,34 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@babel/parser": "7.13.15",
-    "@babel/preset-env": "7.13.10",
-    "@babel/preset-typescript": "7.13.0",
-    "@ottofeller/eslint-config-ottofeller": "0.8.2",
-    "@rollup/plugin-commonjs": "17.1.0",
-    "@rollup/plugin-node-resolve": "11.2.0",
-    "@rollup/plugin-typescript": "8.2.0",
-    "@types/jest": "26.0.21",
-    "babel-jest": "26.6.3",
+    "@babel/preset-env": "7.16.11",
+    "@babel/preset-typescript": "7.16.7",
+    "@ottofeller/eslint-config-ottofeller": "0.15.6",
+    "@rollup/plugin-commonjs": "21.0.1",
+    "@rollup/plugin-node-resolve": "13.1.3",
+    "@rollup/plugin-typescript": "8.3.0",
+    "@types/jest": "27.4.1",
+    "babel-jest": "27.5.1",
     "babel-plugin-module-resolver": "4.1.0",
     "babel-preset-node": "5.1.1",
-    "eslint": "7.22.0",
-    "rollup": "2.58.3",
-    "ts-jest": "26.5.4",
-    "tslib": "2.1.0",
-    "typescript": "4.2.3"
+    "eslint": "8.9.0",
+    "jest": "27.5.1",
+    "rollup": "2.68.0",
+    "ts-jest": "27.1.3",
+    "tslib": "2.3.1",
+    "typescript": "4.5.5"
   },
   "dependencies": {
-    "@types/ramda": "0.27.39",
-    "danger": "10.6.4",
-    "jest": "26.6.3",
-    "ramda": "0.27.1"
+    "@babel/parser": "7.17.3",
+    "@types/ramda": "0.27.64",
+    "danger": "11.0.2",
+    "ramda": "0.28.0"
+  },
+  "peerDependencies": {
+    "danger": ">=11.0.2"
   },
   "eslintConfig": {
-    "extends": "@ottofeller/eslint-config-ottofeller/node"
+    "extends": "@ottofeller/eslint-config-ottofeller/eslint.node"
   },
   "jest": {
     "coveragePathIgnorePatterns": [

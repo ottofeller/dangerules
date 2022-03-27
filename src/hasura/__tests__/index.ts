@@ -20,7 +20,7 @@ describe('Hasura rules', () => {
             ]}),
           }),
         }} as DangerDSLType,
-        
+
         hasuraMigrationsPath: 'hasura/migrations',
         maxMigrationsLimit  : 10,
         warn                : warnMock,
@@ -37,11 +37,11 @@ describe('Hasura rules', () => {
             getKeyedPaths: () => ({edited: [
               'src/some-file/index.tsx', 'hasura/migrations/1/up', 'hasura/migrations/1/down', 'hasura/migrations/2/up',
               'hasura/migrations/2/down', 'hasura/migrations/3/up', 'hasura/migrations/3/down',
-              'hasura/migrations/4/up', 'hasura/migrations/4/down', 
+              'hasura/migrations/4/up', 'hasura/migrations/4/down',
             ]}),
           }),
         }} as DangerDSLType,
-        
+
         hasuraMigrationsPath: 'hasura/migrations',
         maxMigrationsLimit  : 10,
         warn                : warnMock,
@@ -52,7 +52,7 @@ describe('Hasura rules', () => {
   })
 
   describe('Codegen missing', () => {
-    it('throws a warn if there are Hasura migraions updates but no schema and codegen generated types updates', () => {
+    it('throws a warn if there are Hasura migrations updates but no schema and codegen generated types updates', () => {
       const warnMock = jest.fn()
       const codegenFileExtension = 'generated.ts'
       const codegenPaths = ['generated', 'graphql']

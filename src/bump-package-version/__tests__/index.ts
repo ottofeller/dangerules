@@ -15,7 +15,7 @@ describe('The rule that requires bumping the version in package.json in every pu
           git: {
             fileMatch: (path: string) => ({edited: path.startsWith(includePaths[1])}),
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- exact signature required for a mock
             JSONDiffForFile: async (filename: string): Promise<JSONDiff> => ({
               version: {added: [], after: '0.0.1', before: '0.0.1', removed: []},
             }),
@@ -36,7 +36,7 @@ describe('The rule that requires bumping the version in package.json in every pu
           git: {
             fileMatch: (path: string) => ({edited: path.startsWith(includePaths[1])}),
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- exact signature required for a mock
             JSONDiffForFile: async (filename: string): Promise<JSONDiff> => ({
               version: {added: [], after: '0.0.1', before: '0.2.0', removed: []},
             }),
