@@ -14,7 +14,7 @@ jobs:
       commit_hash: ${{ steps.commit-hash.outputs.commit_hash }}
     steps:
     - id: commit-hash
-      uses: ottofeller/latest-release-commit-hash-action@main
+      uses: ottofeller/github-actions/latest-release-commit-hash@main
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -27,7 +27,7 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
-    - uses: ottofeller/npm-run@main
+    - uses: ottofeller/github-actions/npm-run@main
       with:
         node-version: 16
         command: npm run lint
@@ -41,7 +41,7 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
-    - uses: ottofeller/npm-run@main
+    - uses: ottofeller/github-actions/npm-run@main
       with:
         node-version: 16
         command: npm run test
@@ -51,7 +51,7 @@ jobs:
     needs: [set-commit-hash, lint, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: ottofeller/publish-npm-gh-action@main
+      - uses: ottofeller/github-actions/publish-npm@main
         with:
           ref: ${{ needs.set-commit-hash.outputs.commit_hash }}
           registry-url: https://registry.npmjs.org/
