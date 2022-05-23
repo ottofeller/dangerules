@@ -1,7 +1,6 @@
-/* eslint-disable max-lines -- too many tests, need those extra lines */
+import {DangerDSLType} from 'danger'
 import * as fs from 'fs'
 import {componentHasTests, dirNameRestrictions} from '../index'
-import {DangerDSLType} from 'danger'
 jest.mock('fs')
 
 describe('React rules', () => {
@@ -14,30 +13,32 @@ describe('React rules', () => {
   })
 
   describe('Restrictions on the dir name', () => {
-    ['__tests__', '__mocks__'].forEach(dirName => {
+    ;['__tests__', '__mocks__'].forEach((dirName) => {
       it(`does not check "${dirName}" folders`, () => {
         const componentFilePath = 'src/another/Component/index.tsx'
         const testFilePath = `src/another/Component/${dirName}/index.tsx`
 
         // @ts-ignore
         fs.readFileSync.mockImplementation((path: string) => {
-          if(path === testFilePath || path === componentFilePath) {
+          if (path === testFilePath || path === componentFilePath) {
             return validReactComponent
           }
         })
 
         dirNameRestrictions({
-          danger: {git: {
-            created_files: [] as Array<string>,
+          danger: {
+            git: {
+              created_files: [] as Array<string>,
 
-            fileMatch: (file: string) => ({
-              getKeyedPaths: () => ({created: [''], edited: [file]}),
-            }),
+              fileMatch: (file: string) => ({
+                getKeyedPaths: () => ({created: [''], edited: [file]}),
+              }),
 
-            modified_files: [testFilePath],
-          }} as DangerDSLType,
+              modified_files: [testFilePath],
+            },
+          } as DangerDSLType,
 
-          fail        : failMock,
+          fail: failMock,
           includePaths: ['src'],
         })
 
@@ -48,29 +49,31 @@ describe('React rules', () => {
       })
     })
 
-    it('requires component\'s dir name to have first letter capitalized', () => {
+    it("requires component's dir name to have first letter capitalized", () => {
       const invalidPathToReactComponent = 'src/component/index.tsx'
       const validPathToReactComponent = 'src/another/Component/index.tsx'
 
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
-        if(path === invalidPathToReactComponent || path === validPathToReactComponent) {
+        if (path === invalidPathToReactComponent || path === validPathToReactComponent) {
           return validReactComponent
         }
       })
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [invalidPathToReactComponent],
+        danger: {
+          git: {
+            created_files: [invalidPathToReactComponent],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: [validPathToReactComponent],
-        }} as DangerDSLType,
+            modified_files: [validPathToReactComponent],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -78,17 +81,19 @@ describe('React rules', () => {
       failMock.mockReset()
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [''],
+        danger: {
+          git: {
+            created_files: [''],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: [validPathToReactComponent],
-        }} as DangerDSLType,
+            modified_files: [validPathToReactComponent],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -99,46 +104,50 @@ describe('React rules', () => {
       fs.readFileSync.mockImplementation(() => 'const someExport = 1')
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [''],
+        danger: {
+          git: {
+            created_files: [''],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['src/some-non-component/index.tsx'],
-        }} as DangerDSLType,
+            modified_files: ['src/some-non-component/index.tsx'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
       expect(failMock).not.toHaveBeenCalled()
     })
 
-    it('requires component\'s dir name to be in camel case', () => {
+    it("requires component's dir name to be in camel case", () => {
       const invalidPathToReactComponent = 'src/someComponent/index.tsx'
       const validPathToReactComponent = 'src/another/SomeComponent/index.tsx'
 
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
-        if(path === invalidPathToReactComponent || path === validPathToReactComponent) {
+        if (path === invalidPathToReactComponent || path === validPathToReactComponent) {
           return validReactComponent
         }
       })
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [invalidPathToReactComponent],
+        danger: {
+          git: {
+            created_files: [invalidPathToReactComponent],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: [validPathToReactComponent],
-        }} as DangerDSLType,
+            modified_files: [validPathToReactComponent],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -146,39 +155,43 @@ describe('React rules', () => {
       failMock.mockReset()
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [''],
+        danger: {
+          git: {
+            created_files: [''],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: [validPathToReactComponent],
-        }} as DangerDSLType,
+            modified_files: [validPathToReactComponent],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
       expect(failMock).not.toHaveBeenCalled()
     })
 
-    it('requires non-component\'s dir name to be in dash case', () => {
+    it("requires non-component's dir name to be in dash case", () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => '')
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: ['src/someComponent/index.ts'],
+        danger: {
+          git: {
+            created_files: ['src/someComponent/index.ts'],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['src/another/SomeComponent/index.ts'],
-        }} as DangerDSLType,
+            modified_files: ['src/another/SomeComponent/index.ts'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -186,17 +199,19 @@ describe('React rules', () => {
       failMock.mockReset()
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [''],
+        danger: {
+          git: {
+            created_files: [''],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['src/another/some_component/index.ts'],
-        }} as DangerDSLType,
+            modified_files: ['src/another/some_component/index.ts'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -204,39 +219,43 @@ describe('React rules', () => {
       failMock.mockReset()
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [''],
+        danger: {
+          git: {
+            created_files: [''],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['src/another/some-component/index.ts'],
-        }} as DangerDSLType,
+            modified_files: ['src/another/some-component/index.ts'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
       expect(failMock).not.toHaveBeenCalled()
     })
 
-    it('requires non-component\'s dir name to be in lower case', () => {
+    it("requires non-component's dir name to be in lower case", () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation(() => '')
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: ['src/Some-component/index.ts'],
+        danger: {
+          git: {
+            created_files: ['src/Some-component/index.ts'],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['src/another/Another-Component/index.ts'],
-        }} as DangerDSLType,
+            modified_files: ['src/another/Another-Component/index.ts'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['src'],
       })
 
@@ -246,27 +265,26 @@ describe('React rules', () => {
     it('applies restrictions only to files in includePaths, and not to files from excludePaths', () => {
       // @ts-ignore
       fs.readFileSync.mockImplementation((path: string) => {
-        if(path === 'app/src/Some-Component/index.tsx') {
+        if (path === 'app/src/Some-Component/index.tsx') {
           return validReactComponent
         }
       })
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [
-            'app/src/Some-Component/index.tsx',
-            'app/some-other-file.tsx',
-          ],
+        danger: {
+          git: {
+            created_files: ['app/src/Some-Component/index.tsx', 'app/some-other-file.tsx'],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['app/src/hasura/migrations/1616750931272_set_fk_public_userWorkspace_userId/up.sql'],
-        }} as DangerDSLType,
+            modified_files: ['app/src/hasura/migrations/1616750931272_set_fk_public_userWorkspace_userId/up.sql'],
+          },
+        } as DangerDSLType,
 
         excludePaths: ['app/src/hasura'],
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['app/src'],
       })
 
@@ -274,20 +292,19 @@ describe('React rules', () => {
       failMock.mockReset()
 
       dirNameRestrictions({
-        danger: {git: {
-          created_files: [
-            'app/src/Some-Component/index.tsx',
-            'app/some-other-file.tsx',
-          ],
+        danger: {
+          git: {
+            created_files: ['app/src/Some-Component/index.tsx', 'app/some-other-file.tsx'],
 
-          fileMatch: (file: string) => ({
-            getKeyedPaths: () => ({created: [''], edited: [file]}),
-          }),
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
 
-          modified_files: ['app/src/hasura/migrations/1616750931272_set_fk_public_userWorkspace_userId/up.sql'],
-        }} as DangerDSLType,
+            modified_files: ['app/src/hasura/migrations/1616750931272_set_fk_public_userWorkspace_userId/up.sql'],
+          },
+        } as DangerDSLType,
 
-        fail        : failMock,
+        fail: failMock,
         includePaths: ['app/src'],
       })
 
@@ -297,45 +314,46 @@ describe('React rules', () => {
 
   describe('Check for test coverage', () => {
     const fsMock = (path: string) => {
-      switch(path){
-      case'src/ComponentWithInvalidTest/__tests__/index.tsx':
-        return 'import {SomeOtherStuff} from \'../index\''
-      case'src/ComponentWithInvalidTest/index.tsx':
-        return 'const ComponentWithInvalidTest = memo(function NewComponent() { return null })'
-      case'src/ComponentWithNoDescribeInTest/__tests__/index.tsx':
-        return 'import {ComponentWithNoDescribeInTest} from \'../index\''
-      case'src/ComponentWithNoDescribeInTest/index.tsx':
-        return 'const ComponentWithNoDescribeInTest = memo(function NewComponent() { return null })'
-      case'src/ComponentWithNoImportInTest/__tests__/index.tsx':
-        return 'describe(\''
-      case'src/ComponentWithNoImportInTest/index.tsx':
-        return validReactComponent
-      case'src/ComponentWithoutTestFile/index.tsx':
-        return validReactComponent
-      case'src/ComponentWithValidTest/__tests__/index.tsx':
-        return 'import {ComponentWithValidTest} from \'../index\'\ndescribe(\''
-      case'src/ComponentWithValidTest/index.tsx':
-        return validReactComponent
+      switch (path) {
+        case 'src/ComponentWithInvalidTest/__tests__/index.tsx':
+          return "import {SomeOtherStuff} from '../index'"
+        case 'src/ComponentWithInvalidTest/index.tsx':
+          return 'const ComponentWithInvalidTest = memo(function NewComponent() { return null })'
+        case 'src/ComponentWithNoDescribeInTest/__tests__/index.tsx':
+          return "import {ComponentWithNoDescribeInTest} from '../index'"
+        case 'src/ComponentWithNoDescribeInTest/index.tsx':
+          return 'const ComponentWithNoDescribeInTest = memo(function NewComponent() { return null })'
+        case 'src/ComponentWithNoImportInTest/__tests__/index.tsx':
+          return "describe('"
+        case 'src/ComponentWithNoImportInTest/index.tsx':
+          return validReactComponent
+        case 'src/ComponentWithoutTestFile/index.tsx':
+          return validReactComponent
+        case 'src/ComponentWithValidTest/__tests__/index.tsx':
+          return "import {ComponentWithValidTest} from '../index'\ndescribe('"
+        case 'src/ComponentWithValidTest/index.tsx':
+          return validReactComponent
 
-      default: {
-        let error: Error & {code?: string} = new Error()
-        error.code = 'ENOENT'
-        throw error
-      }}
+        default: {
+          let error: Error & {code?: string} = new Error()
+          error.code = 'ENOENT'
+          throw error
+        }
+      }
     }
 
     const ruleParams = (componentName: string) => ({
       danger: {
         git: {
           created_files: [`src/${componentName}/index.tsx`],
-          fileMatch    : (file: string) => ({
+          fileMatch: (file: string) => ({
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
           modified_files: [] as Array<string>,
         },
       } as DangerDSLType,
 
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src'],
     })
 

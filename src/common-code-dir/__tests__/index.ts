@@ -1,8 +1,7 @@
-/* eslint-disable max-lines -- too many tests, need those extra lines */
+import {DangerDSLType} from 'danger'
 import * as fs from 'fs'
 import * as R from 'ramda'
 import {commonCodeDir} from '../index'
-import {DangerDSLType} from 'danger'
 jest.mock('fs')
 
 describe('Common code dir rule', () => {
@@ -26,41 +25,48 @@ describe('Common code dir rule', () => {
           ComponentB/
             index.tsx
       */
-      if(path === 'src/') {
+      if (path === 'src/') {
         return ['ComponentA', 'ComponentB', 'common', 'index.tsx']
       }
 
-      if(path === 'src/ComponentA') {
+      if (path === 'src/ComponentA') {
         return ['index.tsx']
       }
 
-      if(path === 'src/ComponentB') {
+      if (path === 'src/ComponentB') {
         return ['index.tsx']
       }
 
-      if(path === 'src/common') {
+      if (path === 'src/common') {
         return ['helpers']
       }
 
-      if(path === 'src/common/helpers') {
+      if (path === 'src/common/helpers') {
         return ['index.tsx', 'some-helper']
       }
 
-      if(path === 'src/common/helpers/some-helper') {
+      if (path === 'src/common/helpers/some-helper') {
         return ['index.tsx']
       }
     })
 
     // @ts-ignore
-    fs.statSync.mockImplementation((path: string) => ({isDirectory: () => R.includes(
-      path,
-      ['src', 'src/ComponentA', 'src/ComponentB', 'src/common', 'src/common/helpers', 'src/common/helpers/some-helper'],
-    )}))
+    fs.statSync.mockImplementation((path: string) => ({
+      isDirectory: () =>
+        R.includes(path, [
+          'src',
+          'src/ComponentA',
+          'src/ComponentB',
+          'src/common',
+          'src/common/helpers',
+          'src/common/helpers/some-helper',
+        ]),
+    }))
 
     // Named imports case
     // @ts-ignore
     fs.readFileSync.mockImplementation((path: string) => {
-      if(R.includes('src/ComponentA/index.tsx', path)) {
+      if (R.includes('src/ComponentA/index.tsx', path)) {
         return `
           import {someHelperTwo} from 'some-helper-two'
           import {someHelper} from 'common/helpers'
@@ -72,7 +78,7 @@ describe('Common code dir rule', () => {
         `
       }
 
-      if(R.includes('src/ComponentB/index.tsx', path)) {
+      if (R.includes('src/ComponentB/index.tsx', path)) {
         return `
           import {someHelperTwo} from '../some-helper-two'
           import {first, someHelper as sh, third} from '../common/helpers'
@@ -86,23 +92,30 @@ describe('Common code dir rule', () => {
     })
 
     // @ts-ignore
-    fs.existsSync.mockImplementation((path: string) => R.includes(
-      path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
+    fs.existsSync.mockImplementation((path: string) =>
+      R.includes(
+        path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
 
-      [
-        'src/common/helpers/index.tsx', 'src/some-helper-two/index.tsx', 'src/another-thing.tsx',
-        'src/ComponentA/index.tsx', 'src/ComponentB/index.tsx',
-      ],
-    ))
+        [
+          'src/common/helpers/index.tsx',
+          'src/some-helper-two/index.tsx',
+          'src/another-thing.tsx',
+          'src/ComponentA/index.tsx',
+          'src/ComponentB/index.tsx',
+        ],
+      ),
+    )
 
     commonCodeDir({
       baseImportPath: 'src/',
 
-      danger: {git: {
-        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
-      }} as DangerDSLType,
+      danger: {
+        git: {
+          fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+        },
+      } as DangerDSLType,
 
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src/'],
     })
 
@@ -112,7 +125,7 @@ describe('Common code dir rule', () => {
     // Default imports cas
     // @ts-ignore
     fs.readFileSync.mockImplementation((path: string) => {
-      if(R.includes('src/ComponentA/index.tsx', path)) {
+      if (R.includes('src/ComponentA/index.tsx', path)) {
         return `
           import {someHelper} from 'common/helpers'
           import anotherThing from 'another-thing'
@@ -123,7 +136,7 @@ describe('Common code dir rule', () => {
         `
       }
 
-      if(R.includes('src/ComponentB/index.tsx', path)) {
+      if (R.includes('src/ComponentB/index.tsx', path)) {
         return `
           import {someHelperTwo} from '../some-helper-two'
           import helpers, {third} from '../common/helpers'
@@ -139,67 +152,81 @@ describe('Common code dir rule', () => {
     commonCodeDir({
       baseImportPath: 'src/',
 
-      danger: {git: {
-        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
-      }} as DangerDSLType,
+      danger: {
+        git: {
+          fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+        },
+      } as DangerDSLType,
 
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src/'],
     })
 
     expect(failMock).toHaveBeenCalledTimes(1)
   })
 
-  it('doesn\'t throw a fail if all common modules are imported from common/', () => {
+  it("doesn't throw a fail if all common modules are imported from common/", () => {
     const failMock = jest.fn()
 
     // @ts-ignore
     fs.readdirSync.mockImplementation((path: string) => {
-      if(path === 'src/') {
+      if (path === 'src/') {
         return ['ComponentA', 'ComponentB', 'common', 'index.tsx']
       }
 
-      if(path === 'src/ComponentA') {
+      if (path === 'src/ComponentA') {
         return ['index.tsx']
       }
 
-      if(path === 'src/ComponentB') {
+      if (path === 'src/ComponentB') {
         return ['index.tsx']
       }
 
-      if(path === 'src/common') {
+      if (path === 'src/common') {
         return ['helpers']
       }
 
-      if(path === 'src/common/helpers') {
+      if (path === 'src/common/helpers') {
         return ['index.tsx', 'some-helper']
       }
 
-      if(path === 'src/common/helpers/some-helper') {
+      if (path === 'src/common/helpers/some-helper') {
         return ['index.tsx']
       }
     })
 
     // @ts-ignore
-    fs.statSync.mockImplementation((path: string) => ({isDirectory: () => R.includes(
-      path,
-      ['src', 'src/ComponentA', 'src/ComponentB', 'src/common', 'src/common/helpers', 'src/common/helpers/some-helper'],
-    )}))
+    fs.statSync.mockImplementation((path: string) => ({
+      isDirectory: () =>
+        R.includes(path, [
+          'src',
+          'src/ComponentA',
+          'src/ComponentB',
+          'src/common',
+          'src/common/helpers',
+          'src/common/helpers/some-helper',
+        ]),
+    }))
 
     // @ts-ignore
-    fs.existsSync.mockImplementation((path: string) => R.includes(
-      path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
+    fs.existsSync.mockImplementation((path: string) =>
+      R.includes(
+        path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
 
-      [
-        'src/common/helpers/index.tsx', 'src/some-helper-two/index.tsx', 'src/another-thing.tsx',
-        'src/ComponentA/index.tsx', 'src/ComponentB/index.tsx',
-      ],
-    ))
+        [
+          'src/common/helpers/index.tsx',
+          'src/some-helper-two/index.tsx',
+          'src/another-thing.tsx',
+          'src/ComponentA/index.tsx',
+          'src/ComponentB/index.tsx',
+        ],
+      ),
+    )
 
     // Named imports case
     // @ts-ignore
     fs.readFileSync.mockImplementation((path: string) => {
-      if(R.includes('src/ComponentA/index.tsx', path)) {
+      if (R.includes('src/ComponentA/index.tsx', path)) {
         return `
           import {someHelperTwo} from '../common/some-helper-two'
           import {someHelper} from 'common/helpers'
@@ -211,7 +238,7 @@ describe('Common code dir rule', () => {
         `
       }
 
-      if(R.includes('src/ComponentB/index.tsx', path)) {
+      if (R.includes('src/ComponentB/index.tsx', path)) {
         return `
           import {someHelperTwo} from '../some-helper-two'
           import {first, someHelper as sh, third} from '../common/helpers'
@@ -226,40 +253,41 @@ describe('Common code dir rule', () => {
     commonCodeDir({
       baseImportPath: 'src/',
 
-      danger: {git: {
-        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
-      }} as DangerDSLType,
+      danger: {
+        git: {
+          fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+        },
+      } as DangerDSLType,
 
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src/'],
     })
 
     expect(failMock).not.toHaveBeenCalled()
   })
 
-  it('doesn\'t throw a fail in case multiple imports from node_modules', () => {
+  it("doesn't throw a fail in case multiple imports from node_modules", () => {
     const failMock = jest.fn()
 
     // @ts-ignore
     fs.readdirSync.mockImplementation((path: string) => {
-      if(path === 'src/') {
+      if (path === 'src/') {
         return ['ComponentA', 'ComponentB']
       }
 
-      if(path === 'src/ComponentA') {
+      if (path === 'src/ComponentA') {
         return ['index.tsx']
       }
 
-      if(path === 'src/ComponentB') {
+      if (path === 'src/ComponentB') {
         return ['index.tsx']
       }
     })
 
     // @ts-ignore
-    fs.statSync.mockImplementation((path: string) => ({isDirectory: () => R.includes(
-      path,
-      ['src', 'src/ComponentA', 'src/ComponentB'],
-    )}))
+    fs.statSync.mockImplementation((path: string) => ({
+      isDirectory: () => R.includes(path, ['src', 'src/ComponentA', 'src/ComponentB']),
+    }))
 
     // @ts-ignore
     fs.existsSync.mockImplementation(() => false)
@@ -267,7 +295,7 @@ describe('Common code dir rule', () => {
     // Named imports case
     // @ts-ignore
     fs.readFileSync.mockImplementation((path: string) => {
-      if(R.includes('src/ComponentA/index.tsx', path) || R.includes('src/ComponentB/index.tsx', path)) {
+      if (R.includes('src/ComponentA/index.tsx', path) || R.includes('src/ComponentB/index.tsx', path)) {
         return `
           import anotherThing from 'another-thing'
 
@@ -281,51 +309,53 @@ describe('Common code dir rule', () => {
     commonCodeDir({
       baseImportPath: 'src/',
 
-      danger: {git: {
-        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
-      }} as DangerDSLType,
+      danger: {
+        git: {
+          fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+        },
+      } as DangerDSLType,
 
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src/'],
     })
 
     expect(failMock).not.toHaveBeenCalled()
   })
 
-  it('doesn\'t throw a fail in case of import from dirs excluded by params', () => {
+  it("doesn't throw a fail in case of import from dirs excluded by params", () => {
     const failMock = jest.fn()
     const extraCommonDirNames = ['types']
 
     // @ts-ignore
     fs.readdirSync.mockImplementation((path: string) => {
-      if(path === 'src/') {
+      if (path === 'src/') {
         return ['ComponentA', 'ComponentB']
       }
 
-      if(path === 'src/ComponentA') {
+      if (path === 'src/ComponentA') {
         return ['index.tsx']
       }
 
-      if(path === 'src/ComponentB') {
+      if (path === 'src/ComponentB') {
         return ['index.tsx']
       }
     })
 
     // @ts-ignore
-    fs.statSync.mockImplementation((path: string) => ({isDirectory: () => R.includes(
-      path,
-      ['src', 'src/ComponentA', 'src/ComponentB'],
-    )}))
+    fs.statSync.mockImplementation((path: string) => ({
+      isDirectory: () => R.includes(path, ['src', 'src/ComponentA', 'src/ComponentB']),
+    }))
 
     // @ts-ignore
-    fs.existsSync.mockImplementation((path: string) => R.includes(
-      path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''),
-      [`src/${extraCommonDirNames[0]}/another-thing.ts`],
-    ))
+    fs.existsSync.mockImplementation((path: string) =>
+      R.includes(path.replace(__dirname.replace('src/common-code-dir/__tests__', ''), ''), [
+        `src/${extraCommonDirNames[0]}/another-thing.ts`,
+      ]),
+    )
 
     // @ts-ignore
     fs.readFileSync.mockImplementation((path: string) => {
-      if(R.includes('src/ComponentA/index.tsx', path) || R.includes('src/ComponentB/index.tsx', path)) {
+      if (R.includes('src/ComponentA/index.tsx', path) || R.includes('src/ComponentB/index.tsx', path)) {
         return `
           import anotherThing from '${extraCommonDirNames[0]}/another-thing'
           import someThing from 'common/some-thing'
@@ -340,12 +370,14 @@ describe('Common code dir rule', () => {
     commonCodeDir({
       baseImportPath: 'src/',
 
-      danger: {git: {
-        fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
-      }} as DangerDSLType,
+      danger: {
+        git: {
+          fileMatch: () => ({edited: true, getKeyedPaths: () => ({edited: ['src/ComponentA/index.tsx']})}),
+        },
+      } as DangerDSLType,
 
       extraCommonDirNames,
-      fail        : failMock,
+      fail: failMock,
       includePaths: ['src/'],
     })
 
