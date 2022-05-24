@@ -144,4 +144,36 @@ describe('The rule that requires bumping the version in package.json in every pu
     expect(JSONDiffForFileMock).toHaveBeenCalled()
     expect(failMock).not.toHaveBeenCalled()
   })
+
+  it('does not fail on not updated package.json if edited files are excluded', async () => {
+    fileMatchMock
+      .mockReturnValueOnce({
+        edited: true,
+        getKeyedPaths: getKeyedPathsMock,
+      } as unknown as MatchResult<GitMatchResult>)
+      .mockReturnValueOnce({
+        edited: true,
+      } as unknown as MatchResult<GitMatchResult>)
+
+    getKeyedPathsMock.mockReturnValueOnce({
+      edited: [edited],
+    } as KeyedPaths<GitMatchResult>)
+
+    JSONDiffForFileMock.mockResolvedValueOnce({
+      version: {added: [], after: '0.0.1', before: '0.0.1', removed: []},
+    } as JSONDiff)
+
+    await bumpPackageVersion({
+      danger: dangerInstance('main'),
+      fail: failMock,
+      includePaths,
+      excludePaths: [edited],
+      restrictToBranches: ['main'],
+    })
+
+    expect(fileMatchMock).toHaveBeenCalledTimes(1)
+    expect(getKeyedPathsMock).toHaveBeenCalled()
+    expect(JSONDiffForFileMock).not.toHaveBeenCalled()
+    expect(failMock).not.toHaveBeenCalled()
+  })
 })
