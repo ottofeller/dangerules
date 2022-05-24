@@ -8,7 +8,7 @@ describe('The rule that requires bumping the version in package.json in every pu
   const fileMatchMock = jest.fn<MatchResult<GitMatchResult>, [string[]]>()
   const getKeyedPathsMock = jest.fn<KeyedPaths<GitMatchResult>, []>()
   const JSONDiffForFileMock = jest.fn<Promise<JSONDiff>, [string]>()
-  const failMock = jest.fn<any, [string]>(console.log)
+  const failMock = jest.fn<void, [string]>()
 
   const dangerInstance = (ref: string) =>
     ({
@@ -111,8 +111,7 @@ describe('The rule that requires bumping the version in package.json in every pu
     expect(fileMatchMock).toHaveBeenCalledTimes(2)
     expect(getKeyedPathsMock).toHaveBeenCalled()
     expect(JSONDiffForFileMock).toHaveBeenCalled()
-    // The fail call count is zero, even though one can see the log message from the mock implementation (see line 13).
-    // expect(failMock).toHaveBeenCalled()
+    expect(failMock).toHaveBeenCalled()
   })
 
   it('does not fail on edited files and updated package.json', async () => {

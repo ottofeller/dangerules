@@ -30,16 +30,20 @@ export const bumpPackageVersion = async (params: {
     R.filter(R.anyPass(R.map(R.includes, params.includePaths))),
   )(files.getKeyedPaths().edited) as string[]
 
-  R.forEach(async (path) => {
-    // If there are no edits in the includePath the version should not be bumped
-    if (!params.danger.git.fileMatch(`${path}/**/*`).edited) {
-      return
-    }
+  await Promise.all(
+    R.forEach(async (path) => {
+      // If there are no edits in the includePath the version should not be bumped
+      if (!params.danger.git.fileMatch(`${path}/**/*`).edited) {
+        return
+      }
 
-    const packageJson = await params.danger.git.JSONDiffForFile(`${path}/package.json`)
+      const packageJson = await params.danger.git.JSONDiffForFile(`${path}/package.json`)
 
-    if (!packageJson || !packageJson.version || packageJson.version.after === packageJson.version.before) {
-      params.fail(`The version in package.json must be updated in ${path}`)
-    }
-  }, paths)
+      if (!packageJson || !packageJson.version || packageJson.version.after === packageJson.version.before) {
+        console.log('FAIL START')
+        params.fail(`The version in package.json must be updated in ${path}`)
+        console.log('FAIL END')
+      }
+    }, paths),
+  )
 }
