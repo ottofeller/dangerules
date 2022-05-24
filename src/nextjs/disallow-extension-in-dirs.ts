@@ -1,5 +1,5 @@
-import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
+import * as R from 'ramda'
 
 /**
  * Disallow a file extension in the selected dirs
@@ -22,22 +22,25 @@ export const disallowExtensionInDirs = (params: {
 }) => {
   const filesWithExtension = params.danger.git.fileMatch(`**/*.${params.extension}`)
 
-  if(!filesWithExtension.edited) {
+  if (!filesWithExtension.edited) {
     return
   }
 
   const filesInWrongDirs = R.reject(
     R.anyPass([
-      ...R.map(includePath => R.compose(R.not, R.includes(includePath)), params.includePaths),
-      ...R.map(excludePath => R.includes(excludePath), params.excludePaths || []),
+      ...R.map((includePath) => R.compose(R.not, R.includes(includePath)), params.includePaths),
+      ...R.map<string, (list: string | readonly string[]) => boolean>(R.includes, params.excludePaths || []),
     ]),
 
     filesWithExtension.getKeyedPaths().edited,
   )
 
-  if(!R.isEmpty(filesInWrongDirs)) {
-    params.fail(`These files should have \`.${params.requireExtension}\` extension: ${
-      R.map(file => `\`${file}\` `, filesInWrongDirs)
-    }`)
+  if (!R.isEmpty(filesInWrongDirs)) {
+    params.fail(
+      `These files should have \`.${params.requireExtension}\` extension: ${R.map(
+        (file) => `\`${file}\` `,
+        filesInWrongDirs,
+      )}`,
+    )
   }
 }

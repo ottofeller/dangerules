@@ -1,6 +1,6 @@
-import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
+import * as R from 'ramda'
 
 /**
  * Finds React components within a project and checks them form test coverage.
@@ -21,39 +21,27 @@ export const componentHasTests = (params: {
   includePaths: Array<string>
   testFile?: string
 }) => {
-  R.compose<
-    Array<Array<string>>,
-    Array<string>,
-    Array<string>,
-    Array<string>,
-    Array<string>
-  >(
-    R.forEach<string>(path => {
-      const dirName = R.compose<Array<string>, Array<string>, string>(
-        R.last,
-        R.split('/'),
-      )(path)
+  R.compose<Array<Array<string>>, Array<string>, Array<string>, Array<string>, Array<string>>(
+    R.forEach<string>((path) => {
+      const dirName = R.compose<Array<string>, Array<string>, string>(R.last, R.split('/'))(path)
 
       let isReactComponent
 
-      if(dirName === '__tests__') {
+      if (dirName === '__tests__') {
         return
       }
 
       try {
-        isReactComponent = readFileSync(
-          `${path}/index.tsx`,
-          {encoding: 'utf8', flag: 'r'},
-        ).match(/\= memo\(/gi)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
-      } catch(error: any) {
+        isReactComponent = readFileSync(`${path}/index.tsx`, {encoding: 'utf8', flag: 'r'}).match(/\= memo\(/gi)
+      } catch (error: any) {
         // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-        if(error?.code === 'ENOENT') {
+        // eslint-disable-next-line max-depth -- need to keep the condition within a try-catch block
+        if (error?.code === 'ENOENT') {
           isReactComponent = false
         }
       }
 
-      if(!isReactComponent) {
+      if (!isReactComponent) {
         return false
       }
 
@@ -61,25 +49,22 @@ export const componentHasTests = (params: {
       let testFileContent
 
       try {
-        testFileContent = readFileSync(
-          `${path}/__tests__/${testFile}`,
-          {encoding: 'utf8', flag: 'r'},
-        )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
-      } catch(error: any) {
+        testFileContent = readFileSync(`${path}/__tests__/${testFile}`, {encoding: 'utf8', flag: 'r'})
+      } catch (error: any) {
         // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-        if(error?.code === 'ENOENT') {
+        // eslint-disable-next-line max-depth -- need to keep the condition within a try-catch block
+        if (error?.code === 'ENOENT') {
           params.fail(`No test file found for component ${path}`)
         }
 
         return
       }
 
-      if(!testFileContent.includes(`import {${dirName}} from '../index'`)) {
+      if (!testFileContent.includes(`import {${dirName}} from '../index'`)) {
         params.fail(`The test file for component ${path} does not contain the component import`)
       }
 
-      if(!testFileContent.includes('describe(')) {
+      if (!testFileContent.includes('describe(')) {
         params.fail(`The test file for component ${path} does not contain a "describe" block with the component name`)
       }
     }),
@@ -93,7 +78,8 @@ export const componentHasTests = (params: {
         R.slice(0, -1),
         R.split('/'),
 
-        (file: string) => params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
+        (file: string) =>
+          params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
           params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
       ),
     ),
@@ -101,8 +87,8 @@ export const componentHasTests = (params: {
     // Only work with included paths, avoid excluded paths
     R.reject(
       R.anyPass([
-        ...R.map(includePath => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
-        ...R.map(excludePath => R.startsWith(excludePath), params.excludePaths || []),
+        ...R.map((includePath) => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
+        ...R.map((excludePath) => R.startsWith(excludePath), params.excludePaths || []),
       ]),
     ),
   )(R.concat(params.danger.git.modified_files, params.danger.git.created_files))

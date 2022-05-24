@@ -1,5 +1,5 @@
-import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
+import * as R from 'ramda'
 
 /**
  * Searches for Hasura migrations in edited files.
@@ -23,17 +23,17 @@ export const codegenMissing = (params: {
   const hasuraMigrationsEditedFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`).edited
   const isSchemaEdited = params.danger.git.fileMatch(`${params.schemaPath}`).edited
 
-  if(!hasuraMigrationsEditedFiles) {
+  if (!hasuraMigrationsEditedFiles) {
     return
   }
 
   const codegenEditedFiles = R.compose<Array<Array<string>>, Array<Array<string>>, Array<string>>(
     R.flatten,
 
-    R.map(path => {
+    R.map((path) => {
       const files = params.danger.git.fileMatch(`${path}/**/*.${params.codegenFileExtension}`)
 
-      if(!files.edited) {
+      if (!files.edited) {
         return []
       }
 
@@ -41,17 +41,17 @@ export const codegenMissing = (params: {
     }),
   )(params.codegenPaths)
 
-  if(R.isEmpty(codegenEditedFiles) && !isSchemaEdited) {
+  if (R.isEmpty(codegenEditedFiles) && !isSchemaEdited) {
     params.warn('Found Hasura migrations but no changes in codegen files and schema.json')
     return
   }
 
-  if(!isSchemaEdited) {
+  if (!isSchemaEdited) {
     params.warn('Found Hasura migrations but no changes in schema.json')
     return
   }
 
-  if(R.isEmpty(codegenEditedFiles)) {
+  if (R.isEmpty(codegenEditedFiles)) {
     params.warn('Found Hasura migrations but no changes in codegen files')
     return
   }

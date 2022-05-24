@@ -1,6 +1,6 @@
-import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
+import * as R from 'ramda'
 
 /**
  * For all created/modified files traverses up through all containing folders
@@ -27,16 +27,16 @@ export const dirNameRestrictions = (params: {
 
   R.forEach(
     (file: string) => {
-      const dirs = R.compose<Array<string>, Array<string>, Array<string>>(R.init, R.split('/'))(
+      const dirs = R.compose<Array<string>, Array<string>, Array<string>>(
+        R.init,
+        R.split('/'),
+      )(
         params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
           params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
       )
 
-      R.forEach(index => {
-        const path = R.compose<Array<Array<string>>, Array<string>, string>(
-          R.join('/'),
-          R.slice(0, index),
-        )(dirs)
+      R.forEach((index) => {
+        const path = R.compose<Array<Array<string>>, Array<string>, string>(R.join('/'), R.slice(0, index))(dirs)
 
         const dirName = dirs[index - 1]
         const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
@@ -47,42 +47,43 @@ export const dirNameRestrictions = (params: {
         let isReactComponent
 
         // Don't check the same hierarchy of paths twice
-        if(R.any(R.includes(path), checkedPaths)) {
+        if (R.any(R.includes(path), checkedPaths)) {
           return
         }
 
-        if(excludeFolders.includes(dirName)) {
+        if (excludeFolders.includes(dirName)) {
           return
         }
 
         try {
           isReactComponent = readFileSync(`${path}/index.tsx`, {encoding: 'utf8', flag: 'r'}).match(/\= memo\(/gi)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- workaround for SystemError
-        } catch(error: any) {
+        } catch (error: any) {
           // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-          if(error?.code === 'ENOENT') {
+          // eslint-disable-next-line max-depth -- need to keep the condition within a try-catch block
+          if (error?.code === 'ENOENT') {
             isReactComponent = false
           }
         }
 
-        if(isReactComponent && !isDirNameFirstLetterCapitalized) {
+        if (isReactComponent && !isDirNameFirstLetterCapitalized) {
           params.fail(`Component's dir name must have first letter capitalized: ${path}`)
         }
 
-        if(isReactComponent && (isDirNameDashCased || isDirNameSnakeCased)) {
+        if (isReactComponent && (isDirNameDashCased || isDirNameSnakeCased)) {
           params.fail(`Component's dir name must be in camel case: ${path}`)
         }
 
-        if(!isReactComponent && isDirNameCamelCased && !isNextjsRouteParameterDir) {
-          // eslint-disable-next-line max-len -- Need this long fail description
-          params.fail(`Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`)
+        if (!isReactComponent && isDirNameCamelCased && !isNextjsRouteParameterDir) {
+          params.fail(
+            `Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`,
+          )
         }
 
-        if(!isReactComponent && isDirNameFirstLetterCapitalized) {
+        if (!isReactComponent && isDirNameFirstLetterCapitalized) {
           params.fail(`Non-component's dir name must have first letter in lower case: ${path}`)
         }
 
-        if(!isReactComponent && isDirNameSnakeCased) {
+        if (!isReactComponent && isDirNameSnakeCased) {
           params.fail(`Use "-" instead of "_" in non-component dir names: ${path}`)
         }
 
@@ -92,8 +93,8 @@ export const dirNameRestrictions = (params: {
 
     R.reject(
       R.anyPass([
-        ...R.map(includePath => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
-        ...R.map(excludePath => R.startsWith(excludePath), params.excludePaths || []),
+        ...R.map((includePath) => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
+        ...R.map((excludePath) => R.startsWith(excludePath), params.excludePaths || []),
       ]),
 
       R.concat(params.danger.git.modified_files, params.danger.git.created_files),

@@ -17,11 +17,11 @@ export const squashMigrations = (params: {
 }) => {
   const migrationsFiles = params.danger.git.fileMatch(`${params.hasuraMigrationsPath}/**/*`)
 
-  if(!migrationsFiles.edited) {
+  if (!migrationsFiles.edited) {
     return
   }
 
-  if((migrationsFiles.getKeyedPaths().edited || []).length > params.maxMigrationsLimit) {
+  if ((migrationsFiles.getKeyedPaths().edited || []).length > params.maxMigrationsLimit) {
     params.warn('Too many Hasura migrations files, consider squashing some of them')
   }
 }

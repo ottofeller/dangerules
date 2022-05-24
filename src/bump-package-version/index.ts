@@ -1,5 +1,5 @@
-import * as R from 'ramda'
 import {DangerDSLType} from 'danger'
+import * as R from 'ramda'
 
 /**
  * Checks all @includePaths and in case of presence of edited files
@@ -8,24 +8,40 @@ import {DangerDSLType} from 'danger'
  */
 export const bumpPackageVersion = async (params: {
   danger: DangerDSLType
+  excludePaths?: Array<string>
   fail: (message: string) => void
   includePaths: Array<string>
   restrictToBranches: Array<string>
 }) => {
-  if(!params.restrictToBranches.includes(params.danger.github.pr.base.ref)) {
+  if (!params.restrictToBranches.includes(params.danger.github.pr.base.ref)) {
     return
   }
 
-  R.forEach(async includePath => {
-    // If there are no edits in the includePath the version should not be bumped
-    if(!params.danger.git.fileMatch(`${includePath}/**/*`).edited) {
-      return
-    }
+  const files = params.danger.git.fileMatch(`**/*`)
 
-    const packageJson = await params.danger.git.JSONDiffForFile(`${includePath}/package.json`)
+  if (!files.edited) {
+    return
+  }
 
-    if(!packageJson || !packageJson.version || packageJson.version.after === packageJson.version.before) {
-      params.fail(`The version in package.json must be updated in ${includePath}`)
-    }
-  }, params.includePaths)
+  const paths = R.compose(
+    R.reject(
+      R.anyPass(R.map<string, (list: string | readonly string[]) => boolean>(R.includes, params.excludePaths || [])),
+    ),
+    R.filter(R.anyPass(R.map(R.includes, params.includePaths))),
+  )(files.getKeyedPaths().edited) as string[]
+
+  await Promise.all(
+    R.forEach(async (path) => {
+      // If there are no edits in the includePath the version should not be bumped
+      if (!params.danger.git.fileMatch(`${path}/**/*`).edited) {
+        return
+      }
+
+      const packageJson = await params.danger.git.JSONDiffForFile(`${path}/package.json`)
+
+      if (!packageJson || !packageJson.version || packageJson.version.after === packageJson.version.before) {
+        params.fail(`The version in package.json must be updated in ${path}`)
+      }
+    }, paths),
+  )
 }

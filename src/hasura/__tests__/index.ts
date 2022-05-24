@@ -1,6 +1,6 @@
+import {DangerDSLType} from 'danger'
 import * as R from 'ramda'
 import {codegenMissing, squashMigrations} from '../index'
-import {DangerDSLType} from 'danger'
 
 describe('Hasura rules', () => {
   describe('Squash migrations', () => {
@@ -8,43 +8,65 @@ describe('Hasura rules', () => {
       const warnMock = jest.fn()
 
       squashMigrations({
-        danger: {git: {
-          fileMatch: () => ({
-            edited: true,
+        danger: {
+          git: {
+            fileMatch: () => ({
+              edited: true,
 
-            getKeyedPaths: () => ({edited: [
-              'hasura/migrations/1/up', 'hasura/migrations/1/down', 'hasura/migrations/2/up',
-              'hasura/migrations/2/down', 'hasura/migrations/3/up', 'hasura/migrations/3/down',
-              'hasura/migrations/4/up', 'hasura/migrations/4/down', 'hasura/migrations/5/up',
-              'hasura/migrations/5/down', 'hasura/migrations/6/up', 'hasura/migrations/6/down',
-            ]}),
-          }),
-        }} as DangerDSLType,
+              getKeyedPaths: () => ({
+                edited: [
+                  'hasura/migrations/1/up',
+                  'hasura/migrations/1/down',
+                  'hasura/migrations/2/up',
+                  'hasura/migrations/2/down',
+                  'hasura/migrations/3/up',
+                  'hasura/migrations/3/down',
+                  'hasura/migrations/4/up',
+                  'hasura/migrations/4/down',
+                  'hasura/migrations/5/up',
+                  'hasura/migrations/5/down',
+                  'hasura/migrations/6/up',
+                  'hasura/migrations/6/down',
+                ],
+              }),
+            }),
+          },
+        } as DangerDSLType,
 
         hasuraMigrationsPath: 'hasura/migrations',
-        maxMigrationsLimit  : 10,
-        warn                : warnMock,
+        maxMigrationsLimit: 10,
+        warn: warnMock,
       })
 
       expect(warnMock).toHaveBeenCalled()
       warnMock.mockReset()
 
       squashMigrations({
-        danger: {git: {
-          fileMatch: () => ({
-            edited: true,
+        danger: {
+          git: {
+            fileMatch: () => ({
+              edited: true,
 
-            getKeyedPaths: () => ({edited: [
-              'src/some-file/index.tsx', 'hasura/migrations/1/up', 'hasura/migrations/1/down', 'hasura/migrations/2/up',
-              'hasura/migrations/2/down', 'hasura/migrations/3/up', 'hasura/migrations/3/down',
-              'hasura/migrations/4/up', 'hasura/migrations/4/down',
-            ]}),
-          }),
-        }} as DangerDSLType,
+              getKeyedPaths: () => ({
+                edited: [
+                  'src/some-file/index.tsx',
+                  'hasura/migrations/1/up',
+                  'hasura/migrations/1/down',
+                  'hasura/migrations/2/up',
+                  'hasura/migrations/2/down',
+                  'hasura/migrations/3/up',
+                  'hasura/migrations/3/down',
+                  'hasura/migrations/4/up',
+                  'hasura/migrations/4/down',
+                ],
+              }),
+            }),
+          },
+        } as DangerDSLType,
 
         hasuraMigrationsPath: 'hasura/migrations',
-        maxMigrationsLimit  : 10,
-        warn                : warnMock,
+        maxMigrationsLimit: 10,
+        warn: warnMock,
       })
 
       expect(warnMock).not.toHaveBeenCalled()
@@ -64,22 +86,24 @@ describe('Hasura rules', () => {
         codegenFileExtension,
         codegenPaths,
 
-        danger: {git: {
-          fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/**/*`) {
-              return {
-                edited       : true,
-                getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+        danger: {
+          git: {
+            fileMatch: (path: string) => {
+              if (path === `${hasuraMigrationsPath}/**/*`) {
+                return {
+                  edited: true,
+                  getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+                }
               }
-            }
 
-            return {edited: false}
+              return {edited: false}
+            },
           },
-        }} as DangerDSLType,
+        } as DangerDSLType,
 
         hasuraMigrationsPath,
         schemaPath: 'src/schema.json',
-        warn      : warnMock,
+        warn: warnMock,
       })
 
       expect(warnMock).toHaveBeenCalledWith('Found Hasura migrations but no changes in codegen files and schema.json')
@@ -90,29 +114,33 @@ describe('Hasura rules', () => {
         codegenFileExtension,
         codegenPaths,
 
-        danger: {git: {
-          fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/**/*`) {
-              return {
-                edited       : true,
-                getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+        danger: {
+          git: {
+            fileMatch: (path: string) => {
+              if (path === `${hasuraMigrationsPath}/**/*`) {
+                return {
+                  edited: true,
+                  getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+                }
               }
-            }
 
-            if(R.any(codegenPath => path === `${codegenPath}/**/*.${codegenFileExtension}`, codegenPaths)) {
-              return {
-                edited: true,
+              if (R.any((codegenPath) => path === `${codegenPath}/**/*.${codegenFileExtension}`, codegenPaths)) {
+                return {
+                  edited: true,
 
-                getKeyedPaths: () => ({edited: [
-                  'frontend/src/generated/index.generated.ts',
-                  'frontend/src/SomeComponent/graphql/query.generated.ts',
-                ]}),
+                  getKeyedPaths: () => ({
+                    edited: [
+                      'frontend/src/generated/index.generated.ts',
+                      'frontend/src/SomeComponent/graphql/query.generated.ts',
+                    ],
+                  }),
+                }
               }
-            }
 
-            return {edited: false}
+              return {edited: false}
+            },
           },
-        }} as DangerDSLType,
+        } as DangerDSLType,
 
         hasuraMigrationsPath,
         schemaPath,
@@ -127,22 +155,24 @@ describe('Hasura rules', () => {
         codegenFileExtension,
         codegenPaths,
 
-        danger: {git: {
-          fileMatch: (path: string) => {
-            if(path === `${hasuraMigrationsPath}/**/*`) {
-              return {
-                edited       : true,
-                getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+        danger: {
+          git: {
+            fileMatch: (path: string) => {
+              if (path === `${hasuraMigrationsPath}/**/*`) {
+                return {
+                  edited: true,
+                  getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+                }
               }
-            }
 
-            if(path === schemaPath) {
-              return {edited: true, getKeyedPaths: () => ({edited: [schemaPath]})}
-            }
+              if (path === schemaPath) {
+                return {edited: true, getKeyedPaths: () => ({edited: [schemaPath]})}
+              }
 
-            return {edited: false}
+              return {edited: false}
+            },
           },
-        }} as DangerDSLType,
+        } as DangerDSLType,
 
         hasuraMigrationsPath,
         schemaPath,
@@ -157,12 +187,14 @@ describe('Hasura rules', () => {
         codegenFileExtension,
         codegenPaths,
 
-        danger: {git: {
-          fileMatch: () => ({
-            edited       : true,
-            getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
-          }),
-        }} as DangerDSLType,
+        danger: {
+          git: {
+            fileMatch: () => ({
+              edited: true,
+              getKeyedPaths: () => ({edited: ['hasura/migrations/1/up', 'hasura/migrations/1/down']}),
+            }),
+          },
+        } as DangerDSLType,
 
         hasuraMigrationsPath,
         schemaPath,
