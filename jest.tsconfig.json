@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "esnext",
-    "sourceMap": false,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "noImplicitUseStrict": true,
     "removeComments": true,
