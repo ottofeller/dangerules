@@ -1,7 +1,7 @@
 import {DangerDSLType, MarkdownString} from 'danger'
 import {readFileSync} from 'fs'
 import * as R from 'ramda'
-import {codegenMissing, squashMigrations, migrationTableChange} from '../index'
+import {codegenMissing, migrationTableChange, squashMigrations} from '../index'
 
 jest.mock('fs')
 
@@ -256,6 +256,19 @@ describe('Hasura rules', () => {
       expect(warnMock).toHaveBeenCalledTimes(0)
     })
 
+    it('warns if unique index is created', () => {
+      mockedReadFileSync.mockReturnValue('ALTER TABLE users ADD COLUMN uid; CREATE UNIQUE INDEX uuid ON users (uid);')
+
+      migrationTableChange({
+        danger: dangerMock(['hasura/migrations/1/up']),
+        hasuraMigrationsPath: 'hasura/migrations',
+        warn: warnMock,
+      })
+
+      expect(warnMock).toHaveBeenCalledTimes(1)
+      expect(warnMock).toHaveBeenCalledWith('Found Hasura migration creating unique index', 'hasura/migrations/1/up')
+    })
+
     it('warns if a field is renamed', () => {
       mockedReadFileSync.mockReturnValue('ALTER TABLE users RENAME COLUMN name; ALTER TABLE users ADD COLUMN address;')
 
@@ -298,6 +311,21 @@ describe('Hasura rules', () => {
         'Found Hasura migration removing "NOT NULL" constraint',
         'hasura/migrations/1/up',
       )
+    })
+
+    it('warns if a primary key is added', () => {
+      mockedReadFileSync.mockReturnValue(
+        'ALTER TABLE users ADD COLUMN address; ALTER TABLE users ADD PRIMARY KEY (uid);',
+      )
+
+      migrationTableChange({
+        danger: dangerMock(['hasura/migrations/1/up']),
+        hasuraMigrationsPath: 'hasura/migrations',
+        warn: warnMock,
+      })
+
+      expect(warnMock).toHaveBeenCalledTimes(1)
+      expect(warnMock).toHaveBeenCalledWith('Found Hasura migration adding a primary key', 'hasura/migrations/1/up')
     })
 
     it('warns only for files with undesirable changes', () => {

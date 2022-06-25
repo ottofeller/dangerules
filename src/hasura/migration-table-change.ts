@@ -29,7 +29,13 @@ export const migrationTableChange = (params: {
     (filePath) =>
       R.compose<[string], string, string[], string[], string[], void>(
         R.forEach((statement) => {
-          const isAlterTableStatement = /^ALTER TABLE/.test(statement)
+          const isCreateUniqueIndexStatement = /^CREATE UNIQUE INDEX/.test(statement)
+          if (isCreateUniqueIndexStatement) {
+            warn('Found Hasura migration creating unique index', filePath)
+            return
+          }
+
+          const isAlterTableStatement = /^ALTER (TABLE|(MATERIALIZED )?VIEW)/.test(statement)
           if (!isAlterTableStatement) {
             return
           }
@@ -49,6 +55,11 @@ export const migrationTableChange = (params: {
           const isRemoveNotNullConstraint = /ALTER COLUMN .+ DROP NOT NULL/.test(statement)
           if (isRemoveNotNullConstraint) {
             warn('Found Hasura migration removing "NOT NULL" constraint', filePath)
+          }
+
+          const isAddPrimaryKeyStatement = /ADD PRIMARY KEY/.test(statement)
+          if (isAddPrimaryKeyStatement) {
+            warn('Found Hasura migration adding a primary key', filePath)
           }
         }),
         R.map(R.compose(R.toUpper, R.trim)),
