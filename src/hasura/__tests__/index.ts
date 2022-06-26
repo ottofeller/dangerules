@@ -328,6 +328,23 @@ describe('Hasura rules', () => {
       expect(warnMock).toHaveBeenCalledWith('Found Hasura migration adding a primary key', 'hasura/migrations/1/up')
     })
 
+    it('warns if a unique constrained is added', () => {
+      mockedReadFileSync.mockReturnValue(`
+        ALTER TABLE users ADD CONSTRAINT name_address UNIQUE (name, address);
+        ALTER TABLE users ADD CONSTRAINT users_pkey PRIMARY KEY USING INDEX uuid;'
+      `)
+
+      migrationTableChange({
+        danger: dangerMock(['hasura/migrations/1/up']),
+        hasuraMigrationsPath: 'hasura/migrations',
+        warn: warnMock,
+      })
+
+      expect(warnMock).toHaveBeenCalledTimes(2)
+      expect(warnMock).nthCalledWith(1, 'Found Hasura migration adding a unique constraint', 'hasura/migrations/1/up')
+      expect(warnMock).nthCalledWith(2, 'Found Hasura migration adding a unique constraint', 'hasura/migrations/1/up')
+    })
+
     it('warns if an undesirable change is introduced into a view or a materialized view', () => {
       mockedReadFileSync.mockReturnValue(
         'ALTER VIEW users RENAME COLUMN name; ALTER MATERIALIZED VIEW users RENAME COLUMN name;',

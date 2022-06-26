@@ -61,6 +61,11 @@ export const migrationTableChange = (params: {
           if (isAddPrimaryKeyStatement) {
             warn('Found Hasura migration adding a primary key', filePath)
           }
+
+          const isAddUniqueConstraintStatement = /ADD CONSTRAINT .+ (UNIQUE|PRIMARY KEY)/.test(statement)
+          if (isAddUniqueConstraintStatement) {
+            warn('Found Hasura migration adding a unique constraint', filePath)
+          }
         }),
         R.map(R.compose(R.toUpper, R.trim)),
         // @ts-expect-error -- TS mistakenly identify "R.identity" type as "<T>(val: T): val is T" instead of "<T>(val: T): T"
