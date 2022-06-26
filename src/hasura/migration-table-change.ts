@@ -7,7 +7,9 @@ import * as R from 'ramda'
  * If present, warns in case of:
  * - rename of a field;
  * - removal of a field;
- * - "not null" restrictions on the existing field.
+ * - "not null" restrictions on the existing field;
+ * - primary key was added;
+ * - unique constraint was introduced.
  *
  * @param danger Danger instance
  * @param warn Danger warn function
