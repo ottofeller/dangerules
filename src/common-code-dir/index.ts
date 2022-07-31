@@ -29,7 +29,7 @@ const readdirNested = (params: {allFoundFiles: Array<string>; path: string}): Ar
  * - Resolve them to absolute paths
  * - Construct plain array of all imports
  * - If an import paths counts more than once and has no "/common/" string included, throw a fail().
-
+ * 
  * @param danger Danger instance
  * @param fail Danger fail function
  * @param includePaths paths to include

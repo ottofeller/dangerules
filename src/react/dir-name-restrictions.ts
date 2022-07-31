@@ -1,6 +1,6 @@
-import {DangerDSLType} from 'danger'
-import {readFileSync} from 'fs'
 import * as R from 'ramda'
+import { RuleParamsBase } from './types'
+import {filterPaths, getUniquePaths, isReactComponentFolder} from './utils'
 
 /**
  * For all created/modified files traverses up through all containing folders
@@ -16,88 +16,47 @@ import * as R from 'ramda'
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
  */
-export const dirNameRestrictions = (params: {
-  danger: DangerDSLType
-  excludePaths?: Array<string>
-  fail: (message: string) => void
-  includePaths: Array<string>
-}) => {
-  let checkedPaths: Array<string> = []
-  const excludeFolders = ['__tests__', '__mocks__']
+export const dirNameRestrictions = (params: RuleParamsBase): void => {
+  R.compose(
+    R.forEach((path: string) => {
+      const {fail} = params
+      const isReactComponent = isReactComponentFolder(path)
 
-  R.forEach(
-    (file: string) => {
-      const dirs = R.compose<Array<string>, Array<string>, Array<string>>(
-        R.init,
+      const dirName = R.compose<[str: string], Array<string>, string>(
+        R.last,
         R.split('/'),
-      )(
-        params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
-          params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
-      )
+      )(path)
 
-      R.forEach((index) => {
-        const path = R.compose<Array<Array<string>>, Array<string>, string>(R.join('/'), R.slice(0, index))(dirs)
+      const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
+      const isDirNameCamelCased = dirName.match(/[a-z][A-Z]/g)
+      const isDirNameSnakeCased = dirName.match(/[_]+/g)
+      const isDirNameDashCased = dirName.match(/[\-_]+/g)
+      const isNextjsRouteParameterDir = dirName.match(/^\[.*\]$/g)
 
-        const dirName = dirs[index - 1]
-        const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
-        const isDirNameCamelCased = dirName.match(/[a-z][A-Z]/g)
-        const isDirNameSnakeCased = dirName.match(/[_]+/g)
-        const isDirNameDashCased = dirName.match(/[\-_]+/g)
-        const isNextjsRouteParameterDir = dirName.match(/^\[.*\]$/g)
-        let isReactComponent
+      if (isReactComponent && !isDirNameFirstLetterCapitalized) {
+        fail(`Component's dir name must have first letter capitalized: ${path}`)
+      }
 
-        // Don't check the same hierarchy of paths twice
-        if (R.any(R.includes(path), checkedPaths)) {
-          return
-        }
+      if (isReactComponent && (isDirNameDashCased || isDirNameSnakeCased)) {
+        fail(`Component's dir name must be in camel case: ${path}`)
+      }
 
-        if (excludeFolders.includes(dirName)) {
-          return
-        }
+      if (!isReactComponent && isDirNameCamelCased && !isNextjsRouteParameterDir) {
+        fail(
+          `Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`,
+        )
+      }
 
-        try {
-          isReactComponent = readFileSync(`${path}/index.tsx`, {encoding: 'utf8', flag: 'r'}).match(/\= memo\(/gi)
-        } catch (error: any) {
-          // Any component's dir must have index.tsx within it. If index.tsx file was not found then it is not a component's dir
-          // eslint-disable-next-line max-depth -- need to keep the condition within a try-catch block
-          if (error?.code === 'ENOENT') {
-            isReactComponent = false
-          }
-        }
+      if (!isReactComponent && isDirNameFirstLetterCapitalized) {
+        fail(`Non-component's dir name must have first letter in lower case: ${path}`)
+      }
 
-        if (isReactComponent && !isDirNameFirstLetterCapitalized) {
-          params.fail(`Component's dir name must have first letter capitalized: ${path}`)
-        }
+      if (!isReactComponent && isDirNameSnakeCased) {
+        fail(`Use "-" instead of "_" in non-component dir names: ${path}`)
+      }
+    }),
 
-        if (isReactComponent && (isDirNameDashCased || isDirNameSnakeCased)) {
-          params.fail(`Component's dir name must be in camel case: ${path}`)
-        }
-
-        if (!isReactComponent && isDirNameCamelCased && !isNextjsRouteParameterDir) {
-          params.fail(
-            `Non-component's and Next.js route dir names should not be in camel case, but instead should be in dash case: ${path}`,
-          )
-        }
-
-        if (!isReactComponent && isDirNameFirstLetterCapitalized) {
-          params.fail(`Non-component's dir name must have first letter in lower case: ${path}`)
-        }
-
-        if (!isReactComponent && isDirNameSnakeCased) {
-          params.fail(`Use "-" instead of "_" in non-component dir names: ${path}`)
-        }
-
-        checkedPaths = R.concat(checkedPaths, [path])
-      }, R.range(1, dirs.length + 1))
-    },
-
-    R.reject(
-      R.anyPass([
-        ...R.map((includePath) => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
-        ...R.map((excludePath) => R.startsWith(excludePath), params.excludePaths || []),
-      ]),
-
-      R.concat(params.danger.git.modified_files, params.danger.git.created_files),
-    ),
-  )
+    getUniquePaths,
+    filterPaths,
+  )(params)
 }

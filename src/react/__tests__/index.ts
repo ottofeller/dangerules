@@ -49,6 +49,43 @@ describe('React rules', () => {
       })
     })
 
+    it(`does not check a file twice`, () => {
+      const componentFilePaths = [
+        'src/Component/index.tsx',
+        'src/Component/Icon/index.tsx',
+        'src/Component/Button/index.tsx',
+      ]
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation((path: string) => {
+        if (componentFilePaths.includes(path)) {
+          return validReactComponent
+        }
+      })
+
+      dirNameRestrictions({
+        danger: {
+          git: {
+            created_files: [] as Array<string>,
+
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
+
+            modified_files: componentFilePaths,
+          },
+        } as DangerDSLType,
+
+        fail: failMock,
+        includePaths: ['src'],
+      })
+
+      expect(failMock).not.toHaveBeenCalled()
+
+      // Once per each folder (src, Component, Icon, Button)
+      expect(fs.readFileSync).toHaveBeenCalledTimes(4)
+    })
+
     it("requires component's dir name to have first letter capitalized", () => {
       const invalidPathToReactComponent = 'src/component/index.tsx'
       const validPathToReactComponent = 'src/another/Component/index.tsx'
