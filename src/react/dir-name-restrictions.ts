@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { RuleParamsBase } from './types'
+import {RuleParamsBase} from './types'
 import {filterPaths, getUniquePaths, isReactComponentFolder} from './utils'
 
 /**
@@ -21,12 +21,7 @@ export const dirNameRestrictions = (params: RuleParamsBase): void => {
     R.forEach((path: string) => {
       const {fail} = params
       const isReactComponent = isReactComponentFolder(path)
-
-      const dirName = R.compose<[str: string], Array<string>, string>(
-        R.last,
-        R.split('/'),
-      )(path)
-
+      const dirName = R.compose<[str: string], Array<string>, string>(R.last, R.split('/'))(path)
       const isDirNameFirstLetterCapitalized = dirName.match(/^[A-Z]/)
       const isDirNameCamelCased = dirName.match(/[a-z][A-Z]/g)
       const isDirNameSnakeCased = dirName.match(/[_]+/g)

@@ -4,12 +4,12 @@ import type {RuleParamsBase} from './types'
 
 /**
  * For all created/modified files finds those staring with includePaths (excluding those starting with excludePaths).
- * 
+ *
  * @param danger Danger instance
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
  */
- export const filterPaths = (params: Omit<RuleParamsBase, 'fail'>): Array<string> => {
+export const filterPaths = (params: Omit<RuleParamsBase, 'fail'>): Array<string> => {
   const {danger, includePaths} = params
   const excludePaths = params.excludePaths || []
 
@@ -30,14 +30,11 @@ import type {RuleParamsBase} from './types'
 /**
  * For the provided file paths traverses up through all containing folders
  * and returns unique folder paths.
- * 
+ *
  * @param paths search paths
  * @param excludeFolders folder names to exclude from the result
  */
-export const getUniquePaths = (
-  paths: Array<string>,
-  excludeFolders = ['__tests__', '__mocks__'],
-): Array<string> =>
+export const getUniquePaths = (paths: Array<string>, excludeFolders = ['__tests__', '__mocks__']): Array<string> =>
   R.compose<[paths: Array<string>], Array<string>, Array<string>>(
     R.uniq,
     R.chain(
@@ -52,10 +49,7 @@ export const getUniquePaths = (
           ),
         ),
         R.addIndex<string, string>(R.map)((_dir, i, list) =>
-          R.compose<Array<Array<string>>, Array<string>, string>(
-            R.join('/'),
-            R.slice(0, i + 1)
-          )(list!),
+          R.compose<Array<Array<string>>, Array<string>, string>(R.join('/'), R.slice(0, i + 1))(list!),
         ),
         R.init,
         R.split('/'),
@@ -65,10 +59,10 @@ export const getUniquePaths = (
 
 /**
  * Check a folder path for containing a React component.
- * 
+ *
  * @param path search path
  */
- export const isReactComponentFolder = (path: string): boolean => {
+export const isReactComponentFolder = (path: string): boolean => {
   let isReactComponent = false
 
   try {

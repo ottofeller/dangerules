@@ -1,10 +1,11 @@
 import {DangerDSLType} from 'danger'
 import * as fs from 'fs'
-import {componentHasTests, dirNameRestrictions} from '../index'
+import * as R from 'ramda'
+import {componentHasTests, componentName, dirNameRestrictions} from '../index'
 jest.mock('fs')
 
 describe('React rules', () => {
-  const validReactComponent = 'const SomeComponent = memo(function NewComponent() { return null })'
+  const validReactComponent = 'const SomeComponent = memo(function SomeComponent() { return null })'
 
   const failMock = jest.fn()
 
@@ -379,10 +380,10 @@ describe('React rules', () => {
       }
     }
 
-    const ruleParams = (componentName: string) => ({
+    const ruleParams = (component: string) => ({
       danger: {
         git: {
-          created_files: [`src/${componentName}/index.tsx`],
+          created_files: [`src/${component}/index.tsx`],
           fileMatch: (file: string) => ({
             getKeyedPaths: () => ({created: [''], edited: [file]}),
           }),
@@ -424,6 +425,82 @@ describe('React rules', () => {
     it('fails twice on a React component with a test file that has no component import and no describe block', () => {
       componentHasTests(ruleParams('ComponentWithInvalidTest'))
       expect(failMock).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('Check component name', () => {
+    const invalidReactComponent = 'const SomeComponent = memo(function NewComponent() { return null })'
+
+    const fsMock = (path: string) => {
+      switch (path) {
+        case 'src/ComponentWithInvalidName/__tests__/index.tsx':
+          return invalidReactComponent
+        case 'src/ComponentWithInvalidName/__mocks__/index.tsx':
+          return invalidReactComponent
+        case 'src/ComponentWithInvalidName/index.tsx':
+          return invalidReactComponent
+        case 'src/ComponentWithValidName/__tests__/index.tsx':
+          return invalidReactComponent
+        case 'src/ComponentWithValidName/__mocks__/index.tsx':
+          return invalidReactComponent
+        case 'src/ComponentWithValidName/index.tsx':
+          return validReactComponent
+
+        default: {
+          let error: Error & {code?: string} = new Error()
+          error.code = 'ENOENT'
+          throw error
+        }
+      }
+    }
+
+    const ruleParams = (...components: Array<string>) => ({
+      danger: {
+        git: {
+          created_files: R.map((component: string) => `src/${component}/index.tsx`, components),
+          fileMatch: (file: string) => ({
+            getKeyedPaths: () => ({created: [file], edited: [] as Array<string>}),
+          }),
+          modified_files: [] as Array<string>,
+        },
+      } as DangerDSLType,
+
+      fail: failMock,
+      includePaths: ['src'],
+    })
+
+    beforeEach(() => {
+      jest.resetAllMocks()
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation(fsMock)
+    })
+
+    it('does not fail on a React component with valid naming', () => {
+      componentName(ruleParams('ComponentWithValidName'))
+      expect(fs.readFileSync).toHaveBeenCalledTimes(2)
+      expect(failMock).not.toHaveBeenCalled()
+    })
+
+    it('fails on a React component with invalid naming', () => {
+      componentName(ruleParams('ComponentWithInvalidName'))
+      expect(fs.readFileSync).toHaveBeenCalledTimes(2)
+      expect(failMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not check test and mock folders', () => {
+      componentName(
+        ruleParams(
+          'ComponentWithValidName',
+          'ComponentWithValidName/__tests__',
+          'ComponentWithValidName/__mocks__',
+          'ComponentWithInvalidName',
+          'ComponentWithInvalidName/__tests__',
+          'ComponentWithInvalidName/__mocks__',
+        ),
+      )
+      expect(fs.readFileSync).toHaveBeenCalledTimes(3)
+      expect(failMock).toHaveBeenCalledTimes(1)
     })
   })
 })

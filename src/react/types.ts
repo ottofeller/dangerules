@@ -1,4 +1,4 @@
-import {DangerDSLType} from "danger"
+import {DangerDSLType} from 'danger'
 
 export type RuleParamsBase = {
   danger: DangerDSLType

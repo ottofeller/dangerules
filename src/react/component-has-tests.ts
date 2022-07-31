@@ -11,7 +11,7 @@ type ComponentHasTestRuleParams = RuleParamsBase & {testFile?: string}
  * The test file is searched for the following statements:
  * - component import in form `import {ComponentName} from '../index'`
  * - `describe('...` block
- * 
+ *
  * @param danger Danger instance
  * @param fail Danger fail function
  * @param excludePaths paths to exclude
@@ -68,16 +68,8 @@ export const componentHasTests = (params: ComponentHasTestRuleParams) => {
     }),
 
     R.uniq,
-
     // Strip the file from a path /some/path/somefile.tsx > /some/path
-    R.map(
-      R.compose<[x: string], Array<string>, Array<string>, string>(
-        R.join('/'),
-        R.init,
-        R.split('/'),
-      ),
-    ),
-
+    R.map(R.compose<[x: string], Array<string>, Array<string>, string>(R.join('/'), R.init, R.split('/'))),
     filterPaths,
   )(params)
 }
