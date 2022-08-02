@@ -34,7 +34,7 @@ export const componentName = (params: RuleParamsBase): void => {
       const [, _componentName, functionName] = matches
 
       if (_componentName !== functionName) {
-        fail(`Component's dir name must have first letter capitalized: ${path}`)
+        fail(`The name of the exported component constant must match the name of the function in the memo: ${path}`)
       }
     }),
 
