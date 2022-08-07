@@ -1,6 +1,9 @@
-import {DangerDSLType} from 'danger'
 import {readFileSync} from 'fs'
 import * as R from 'ramda'
+import {RuleParamsBase} from './types'
+import {filterPaths} from './utils'
+
+type ComponentHasTestRuleParams = RuleParamsBase & {testFile?: string}
 
 /**
  * Finds React components within a project and checks them form test coverage.
@@ -8,20 +11,15 @@ import * as R from 'ramda'
  * The test file is searched for the following statements:
  * - component import in form `import {ComponentName} from '../index'`
  * - `describe('...` block
+ *
  * @param danger Danger instance
  * @param fail Danger fail function
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
  * @param testFile name of file to search for within `__tests__` folder (`index.tsx` if not input)
  */
-export const componentHasTests = (params: {
-  danger: DangerDSLType
-  excludePaths?: Array<string>
-  fail: (message: string) => void
-  includePaths: Array<string>
-  testFile?: string
-}) => {
-  R.compose<Array<Array<string>>, Array<string>, Array<string>, Array<string>, Array<string>>(
+export const componentHasTests = (params: ComponentHasTestRuleParams) => {
+  R.compose(
     R.forEach<string>((path) => {
       const dirName = R.compose<Array<string>, Array<string>, string>(R.last, R.split('/'))(path)
 
@@ -70,26 +68,8 @@ export const componentHasTests = (params: {
     }),
 
     R.uniq,
-
     // Strip the file from a path /some/path/somefile.tsx > /some/path
-    R.map(
-      R.compose<Array<string>, string, Array<string>, Array<string>, string>(
-        R.join('/'),
-        R.slice(0, -1),
-        R.split('/'),
-
-        (file: string) =>
-          params.danger.git.fileMatch(file).getKeyedPaths().created[0] ||
-          params.danger.git.fileMatch(file).getKeyedPaths().edited[0],
-      ),
-    ),
-
-    // Only work with included paths, avoid excluded paths
-    R.reject(
-      R.anyPass([
-        ...R.map((includePath) => R.compose(R.not, R.startsWith(includePath)), params.includePaths),
-        ...R.map((excludePath) => R.startsWith(excludePath), params.excludePaths || []),
-      ]),
-    ),
-  )(R.concat(params.danger.git.modified_files, params.danger.git.created_files))
+    R.map(R.compose<[x: string], Array<string>, Array<string>, string>(R.join('/'), R.init, R.split('/'))),
+    filterPaths,
+  )(params)
 }
