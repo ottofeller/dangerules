@@ -128,7 +128,7 @@ but instead should be in dash case;
 - Use "-" (not "_") in non-component dir names.
 
 Additional notes:
-- a React component is defined as a function expression wrapped with `memo`;
+- a React component is defined as a function expression wrapped with `memo` located in an `index.tsx` file;
 - files within `__tests__` and `__mocks__` folders are ignored.
 
 ```typescript
@@ -139,6 +139,11 @@ react.dirNameRestrictions({
   danger,
   fail,
   includePaths: ['src/'],
+  /*
+   * The index page of a nextjs app does not follow the rule.
+   * We cannot use excludePaths here, since the excludePaths would exclude all descendants of a path.
+   */
+  excludeComponents: ['src/pages'],
 })
 ```
 
