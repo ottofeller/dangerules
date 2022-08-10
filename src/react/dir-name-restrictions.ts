@@ -2,6 +2,13 @@ import * as R from 'ramda'
 import {RuleParamsBase} from './types'
 import {filterPaths, getUniquePaths, isReactComponentFolder} from './utils'
 
+type RuleParamsDirNameRestrictions = RuleParamsBase & {
+  /**
+   * Components to exclude (a component is a folder with an "index.tsx" file, therefore only the folder path is required).
+   */
+  excludeComponents?: Array<string>
+}
+
 /**
  * For all created/modified files traverses up through all containing folders
  * and requires the following rules to apply:
@@ -13,10 +20,12 @@ import {filterPaths, getUniquePaths, isReactComponentFolder} from './utils'
  * - Use "-" (not "_") in non-component dir names.
  * @param danger Danger instance
  * @param fail Danger fail function
+ * @param excludeComponents components to exclude
+ * (a component is a folder with an "index.tsx" file, therefore only the folder path is required)
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
  */
-export const dirNameRestrictions = (params: RuleParamsBase): void => {
+export const dirNameRestrictions = (params: RuleParamsDirNameRestrictions): void => {
   R.compose(
     R.forEach((path: string) => {
       const {fail} = params
@@ -51,6 +60,7 @@ export const dirNameRestrictions = (params: RuleParamsBase): void => {
       }
     }),
 
+    R.filter(R.compose(R.not, R.includes(R.__, params.excludeComponents || []))),
     getUniquePaths,
     filterPaths,
   )(params)

@@ -50,6 +50,41 @@ describe('React rules', () => {
       })
     })
 
+    it(`does not check components identified in "excludeComponents" prop`, () => {
+      const componentFilePath = 'src/pages/Component/index.tsx'
+      const srcPagesFilePath = 'src/pages/index.tsx'
+
+      // @ts-ignore
+      fs.readFileSync.mockImplementation((path: string) => {
+        if ([componentFilePath, srcPagesFilePath].includes(path)) {
+          return validReactComponent
+        }
+      })
+
+      dirNameRestrictions({
+        danger: {
+          git: {
+            created_files: [] as Array<string>,
+
+            fileMatch: (file: string) => ({
+              getKeyedPaths: () => ({created: [''], edited: [file]}),
+            }),
+
+            modified_files: [componentFilePath],
+          },
+        } as DangerDSLType,
+
+        fail: failMock,
+        includePaths: ['src'],
+        excludeComponents: ['src/pages'],
+      })
+
+      expect(failMock).not.toHaveBeenCalled()
+
+      // Once per each path component ("src", "src/pages/Component"), except for "src/pages"
+      expect(fs.readFileSync).toHaveBeenCalledTimes(2)
+    })
+
     it(`does not check a file twice`, () => {
       const componentFilePaths = [
         'src/Component/index.tsx',
