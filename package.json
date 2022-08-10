@@ -4,10 +4,11 @@
   "description": "A set of Danger.js rules common applied in OttoFeller projects.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rollup -c && tsc src/*.ts --declaration --allowJs --emitDeclarationOnly --esModuleInterop --outDir dist",
+    "build": "rollup -c && tsc --declaration --emitDeclarationOnly",
     "format": "ofmt src/",
     "lint": "ofmt --lint src/ && olint src/",
-    "test": "jest --no-cache"
+    "test": "jest --no-cache",
+    "typecheck": "tsc --noEmit"
   },
   "author": "",
   "license": "ISC",
