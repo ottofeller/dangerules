@@ -1,6 +1,6 @@
 {
   "name": "@ottofeller/dangerules",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A set of Danger.js rules common applied in OttoFeller projects.",
   "main": "dist/index.js",
   "scripts": {
