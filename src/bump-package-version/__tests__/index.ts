@@ -5,10 +5,10 @@ describe('The rule that requires bumping the version in package.json in every pu
   const edited = 'some/nested/edited'
   const notEdited = 'some/nested/not-edited'
   const includePaths = ['some-dir', edited, notEdited]
-  const fileMatchMock = jest.fn<MatchResult<GitMatchResult>, [string[]]>()
+  const fileMatchMock = jest.fn<MatchResult<GitMatchResult>, [...patterns: string[]]>()
   const getKeyedPathsMock = jest.fn<KeyedPaths<GitMatchResult>, []>()
-  const JSONDiffForFileMock = jest.fn<Promise<JSONDiff>, [string]>()
-  const failMock = jest.fn<void, [string]>()
+  const JSONDiffForFileMock = jest.fn<Promise<JSONDiff>, [excludePaths: string]>()
+  const failMock = jest.fn<void, [message: string]>()
 
   const dangerInstance = (ref: string) =>
     ({
@@ -57,10 +57,15 @@ describe('The rule that requires bumping the version in package.json in every pu
   })
 
   it('does not run if required paths are not edited', async () => {
-    fileMatchMock.mockReturnValueOnce({
-      edited: true,
-      getKeyedPaths: getKeyedPathsMock,
-    } as unknown as MatchResult<GitMatchResult>)
+    fileMatchMock
+      .mockReturnValueOnce({
+        edited: true,
+        getKeyedPaths: getKeyedPathsMock,
+      } as unknown as MatchResult<GitMatchResult>)
+      .mockReturnValue({
+        edited: false,
+        getKeyedPaths: getKeyedPathsMock,
+      } as unknown as MatchResult<GitMatchResult>)
 
     getKeyedPathsMock.mockReturnValueOnce({
       edited: ['some-path/not/from/included'],
@@ -73,17 +78,20 @@ describe('The rule that requires bumping the version in package.json in every pu
       restrictToBranches: ['main'],
     })
 
-    expect(fileMatchMock).toHaveBeenCalledTimes(1)
-    expect(getKeyedPathsMock).toHaveBeenCalled()
+    expect(fileMatchMock).toHaveBeenCalledTimes(4)
+    expect(getKeyedPathsMock).not.toHaveBeenCalled()
     expect(JSONDiffForFileMock).not.toHaveBeenCalled()
     expect(failMock).not.toHaveBeenCalled()
   })
 
   it('fails on edited files and not updated package.json', async () => {
-    fileMatchMock.mockReturnValueOnce({
-      edited: true,
-      getKeyedPaths: getKeyedPathsMock,
-    } as unknown as MatchResult<GitMatchResult>)
+    fileMatchMock.mockImplementation(
+      (path) =>
+        ({
+          edited: path === '**/*' || path.startsWith(edited),
+          getKeyedPaths: getKeyedPathsMock,
+        } as unknown as MatchResult<GitMatchResult>),
+    )
 
     getKeyedPathsMock.mockReturnValueOnce({
       edited: [edited],
@@ -100,17 +108,20 @@ describe('The rule that requires bumping the version in package.json in every pu
       restrictToBranches: ['main'],
     })
 
-    expect(fileMatchMock).toHaveBeenCalledTimes(1)
-    expect(getKeyedPathsMock).toHaveBeenCalled()
+    expect(fileMatchMock).toHaveBeenCalledTimes(4)
+    expect(getKeyedPathsMock).toHaveBeenCalledTimes(1)
     expect(JSONDiffForFileMock).toHaveBeenCalled()
     expect(failMock).toHaveBeenCalled()
   })
 
   it('does not fail on edited files and updated package.json', async () => {
-    fileMatchMock.mockReturnValueOnce({
-      edited: true,
-      getKeyedPaths: getKeyedPathsMock,
-    } as unknown as MatchResult<GitMatchResult>)
+    fileMatchMock.mockImplementation(
+      (path) =>
+        ({
+          edited: path === '**/*' || path.startsWith(edited),
+          getKeyedPaths: getKeyedPathsMock,
+        } as unknown as MatchResult<GitMatchResult>),
+    )
 
     getKeyedPathsMock.mockReturnValueOnce({
       edited: [edited],
@@ -127,21 +138,20 @@ describe('The rule that requires bumping the version in package.json in every pu
       restrictToBranches: ['main'],
     })
 
-    expect(fileMatchMock).toHaveBeenCalledTimes(1)
-    expect(getKeyedPathsMock).toHaveBeenCalled()
-    expect(JSONDiffForFileMock).toHaveBeenCalled()
+    expect(fileMatchMock).toHaveBeenCalledTimes(4)
+    expect(getKeyedPathsMock).toHaveBeenCalledTimes(1)
+    expect(JSONDiffForFileMock).toHaveBeenCalledTimes(1)
     expect(failMock).not.toHaveBeenCalled()
   })
 
   it('does not fail on not updated package.json if edited files are excluded', async () => {
-    fileMatchMock
-      .mockReturnValueOnce({
-        edited: true,
-        getKeyedPaths: getKeyedPathsMock,
-      } as unknown as MatchResult<GitMatchResult>)
-      .mockReturnValueOnce({
-        edited: true,
-      } as unknown as MatchResult<GitMatchResult>)
+    fileMatchMock.mockImplementation(
+      (path) =>
+        ({
+          edited: path === '**/*' || path.startsWith(edited),
+          getKeyedPaths: getKeyedPathsMock,
+        } as unknown as MatchResult<GitMatchResult>),
+    )
 
     getKeyedPathsMock.mockReturnValueOnce({
       edited: [edited],
@@ -159,8 +169,8 @@ describe('The rule that requires bumping the version in package.json in every pu
       restrictToBranches: ['main'],
     })
 
-    expect(fileMatchMock).toHaveBeenCalledTimes(1)
-    expect(getKeyedPathsMock).toHaveBeenCalled()
+    expect(fileMatchMock).toHaveBeenCalledTimes(4)
+    expect(getKeyedPathsMock).toHaveBeenCalledTimes(1)
     expect(JSONDiffForFileMock).not.toHaveBeenCalled()
     expect(failMock).not.toHaveBeenCalled()
   })
