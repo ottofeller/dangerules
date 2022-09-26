@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
+    "rootDir": "src",
     "module": "commonjs",
     "target": "esnext",
     "sourceMap": true,
@@ -7,19 +9,16 @@
     "noImplicitUseStrict": true,
     "removeComments": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "lib": [
       "es2017"
     ],
     "typeRoots": [
       "node_modules/@types",
       "@types"
-    ],
-    "paths": {
-      "*": ["./src/**/*"]
-    }
+    ]
   },
-  "exclude": [
-    "node_modules",
-    "dist"
+  "include": [
+    "src/**/*.ts"
   ]
 }
