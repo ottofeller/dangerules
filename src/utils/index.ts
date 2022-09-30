@@ -1,2 +1,2 @@
-export * from './filePath'
+export * from './file-path'
 export * from './types'
