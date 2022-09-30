@@ -25,10 +25,19 @@ type RuleParamsNagSuppression = RuleParamsBase & {
  * @param excludePath paths to exclude from search (all subfolders are excluded)
  * @param excludeFiles path to particular files to exclude (used primarily to exclude files deeps inside searched folders)
  */
-export const nagSuppression = (params: RuleParamsNagSuppression) => {
-  const {danger, excludeFiles = [], fail, includeFileExtensions = ['ts', 'tsx', 'js', 'jsx']} = params
+export const nagSuppression = async (params: RuleParamsNagSuppression) => {
+  const {danger, excludeFiles = [], fail, includeFileExtensions = ['ts', 'js']} = params
 
-  R.compose(
+  await R.compose<
+    [params: Omit<RuleParamsBase, 'fail'>],
+    Array<string>,
+    Array<string>,
+    Array<string>,
+    Array<string>,
+    Promise<void[]>
+  >(
+    Promise.all.bind(Promise),
+
     R.forEach(async (path: string) => {
       const diff = await danger.git.diffForFile(path)
 
@@ -36,20 +45,15 @@ export const nagSuppression = (params: RuleParamsNagSuppression) => {
         return
       }
 
-      const matches = diff.added.match(/NagSuppressions\.addResourceSuppressions\(/g)
+      const matches = diff.added.match(/\.addResourceSuppressions\(/g)
 
       if (matches) {
         fail(`Found ${matches.length} new NAG suppression calls`, path)
       }
     }),
 
-    R.filter(
-      R.anyPass([
-        R.compose(R.not, R.includes(R.__, excludeFiles)),
-        ...R.map((fileExtension) => R.endsWith(`.${fileExtension}`), includeFileExtensions),
-      ]),
-    ),
-
+    R.reject(R.includes(R.__, excludeFiles)),
+    R.filter(R.anyPass(R.map((fileExtension) => R.endsWith(`.${fileExtension}`), includeFileExtensions))),
     filterPaths,
   )(params)
 }
