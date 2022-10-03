@@ -1,7 +1,7 @@
 import {readFileSync} from 'fs'
 import * as R from 'ramda'
-import {RuleParamsBase} from './types'
-import {filterPaths, getUniquePaths} from './utils'
+import type {RuleParamsBase} from 'utils'
+import {filterPaths, getUniquePaths} from 'utils'
 
 /**
  * For all created/modified files traverses up through all containing folders

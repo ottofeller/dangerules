@@ -1,7 +1,7 @@
 import {readFileSync} from 'fs'
 import * as R from 'ramda'
-import {RuleParamsBase} from './types'
-import {filterPaths} from './utils'
+import type {RuleParamsBase} from 'utils'
+import {filterPaths} from 'utils'
 
 type ComponentHasTestRuleParams = RuleParamsBase & {testFile?: string}
 

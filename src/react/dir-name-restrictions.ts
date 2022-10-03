@@ -1,6 +1,7 @@
 import * as R from 'ramda'
-import {RuleParamsBase} from './types'
-import {filterPaths, getUniquePaths, isReactComponentFolder} from './utils'
+import type {RuleParamsBase} from 'utils'
+import {filterPaths, getUniquePaths} from 'utils'
+import {isReactComponentFolder} from './utils'
 
 type RuleParamsDirNameRestrictions = RuleParamsBase & {
   /**
