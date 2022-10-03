@@ -22,7 +22,7 @@ type RuleParamsNagSuppression = RuleParamsBase & {
  * @param fail Danger warn/fail function
  * @param includePaths search paths (all subfolders are included)
  * @param includeFileExtensions a list of file extensions to check
- * @param excludePath paths to exclude from search (all subfolders are excluded)
+ * @param excludePaths paths to exclude from search (all subfolders are excluded)
  * @param excludeFiles path to particular files to exclude (used primarily to exclude files deeps inside searched folders)
  */
 export const nagSuppression = async (params: RuleParamsNagSuppression) => {
