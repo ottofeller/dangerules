@@ -1,5 +1,5 @@
 export * as bumpPackageVersion from './bump-package-version'
-export * as nagSuppression from './cdk'
+export * as cdk from './cdk'
 export * as commonCodeDir from './common-code-dir'
 export * as hasura from './hasura'
 export * as nextjs from './nextjs'
