@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import type {RuleParamsBase} from './types'
+import type {FilterParams} from './types'
 
 /**
  * For all created/modified files finds those starting with includePaths (excluding those starting with excludePaths).
@@ -8,7 +8,7 @@ import type {RuleParamsBase} from './types'
  * @param excludePaths paths to exclude
  * @param includePaths paths to include
  */
-export const filterPaths = (params: Omit<RuleParamsBase, 'fail'>): Array<string> => {
+export const filterPaths = (params: FilterParams): Array<string> => {
   const {danger, excludePaths = [], includePaths} = params
 
   return R.compose(

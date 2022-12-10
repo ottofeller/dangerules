@@ -1,8 +1,8 @@
 import * as R from 'ramda'
-import type {RuleParamsBase} from 'utils'
+import type {FilterParams, RuleParamsBase} from 'utils'
 import {filterPaths} from 'utils'
 
-type RuleParamsNagSuppression = RuleParamsBase & {
+type RuleParamsNagSuppression = RuleParamsBase<'warn'> & {
   /**
    * Files to exclude.
    */
@@ -19,23 +19,16 @@ type RuleParamsNagSuppression = RuleParamsBase & {
  * Warns if invocations are found in new/edited files.
  *
  * @param danger Danger instance
- * @param fail Danger warn/fail function
+ * @param warn Danger warn/fail function
  * @param includePaths search paths (all subfolders are included)
  * @param includeFileExtensions a list of file extensions to check
  * @param excludePaths paths to exclude from search (all subfolders are excluded)
  * @param excludeFiles path to particular files to exclude (used primarily to exclude files deeps inside searched folders)
  */
 export const nagSuppression = async (params: RuleParamsNagSuppression) => {
-  const {danger, excludeFiles = [], fail, includeFileExtensions = ['ts', 'js']} = params
+  const {danger, excludeFiles = [], warn, includeFileExtensions = ['ts', 'js']} = params
 
-  await R.compose<
-    [params: Omit<RuleParamsBase, 'fail'>],
-    Array<string>,
-    Array<string>,
-    Array<string>,
-    Array<string>,
-    Promise<void[]>
-  >(
+  await R.compose<[params: FilterParams], Array<string>, Array<string>, Array<string>, Array<string>, Promise<void[]>>(
     Promise.all.bind(Promise),
 
     R.forEach(async (path: string) => {
@@ -48,7 +41,7 @@ export const nagSuppression = async (params: RuleParamsNagSuppression) => {
       const matches = diff.added.match(/\.addResourceSuppressions\(/g)
 
       if (matches) {
-        fail(`Found ${matches.length} new NAG suppression calls`, path)
+        warn(`Found ${matches.length} new NAG suppression calls`, path)
       }
     }),
 

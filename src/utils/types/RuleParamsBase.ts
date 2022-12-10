@@ -1,23 +1,23 @@
-import {DangerDSLType, fail} from 'danger'
+import {fail, message, warn} from 'danger'
+import type {FilterParams} from './FilterParams'
 
-export type RuleParamsBase = {
+type DangerMessageFunctions = {
   /**
-   * The Danger DSL instance.
-   */
-  danger: DangerDSLType
-
-  /**
-   * Path to exclude from search.
-   */
-  excludePaths?: Array<string>
-
-  /**
-   * A function that either fails a build or highlights an issue.
+   * Fails a build, outputting a specific reason for failing into a HTML table.
    */
   fail: typeof fail
 
   /**
-   * Path to include into search.
+   * Highlights low-priority issues, but does not fail the build. Message is shown inside a HTML table.
    */
-  includePaths: Array<string>
+  warn: typeof warn
+
+  /**
+   * Adds a message to the Danger table, the only difference between this and warn is the emoji which shows in the table.
+   */
+  message: typeof message
 }
+
+type Message = keyof DangerMessageFunctions
+
+export type RuleParamsBase<M extends Message = 'fail'> = Pick<DangerMessageFunctions, M> & FilterParams
