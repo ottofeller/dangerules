@@ -1,3 +1,4 @@
+import type {AddChange, Change, Chunk} from 'parse-diff'
 import * as R from 'ramda'
 import type {FilterParams, RuleParamsBase} from 'utils'
 import {filterPaths} from 'utils'
@@ -32,17 +33,28 @@ export const nagSuppression = async (params: RuleParamsNagSuppression) => {
     Promise.all.bind(Promise),
 
     R.forEach(async (path: string) => {
-      const diff = await danger.git.diffForFile(path)
+      const diff = await danger.git.structuredDiffForFile(path)
 
       if (!diff) {
         return
       }
 
-      const matches = diff.added.match(/\.addResourceSuppressions\(/g)
+      const resourceSuppressionsRegex = /\.addResourceSuppressions\(/
 
-      if (matches) {
-        warn(`Found ${matches.length} new NAG suppression calls`, path)
-      }
+      R.compose<
+        [chunks: Chunk[]],
+        Array<Array<Change>>,
+        Array<Change>,
+        Array<AddChange>,
+        Array<AddChange>,
+        Array<AddChange>
+      >(
+        R.forEach(({ln}) => warn(`Found new NAG suppression call in file "${path}" at line ${ln}`, path, ln)),
+        R.filter<AddChange>(({content}) => resourceSuppressionsRegex.test(content)),
+        R.filter<Change, AddChange>((change): change is AddChange => change.type === 'add'),
+        R.flatten,
+        R.map((chunk) => chunk.changes),
+      )(diff.chunks)
     }),
 
     R.reject(R.includes(R.__, excludeFiles)),
