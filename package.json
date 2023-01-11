@@ -1,6 +1,6 @@
 {
   "name": "@ottofeller/dangerules",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "A set of Danger.js rules common applied in OttoFeller projects.",
   "main": "dist/index.js",
   "scripts": {
@@ -53,7 +53,9 @@
       "ts",
       "js"
     ],
-    "modulePaths": ["<rootDir>/src"],
+    "modulePaths": [
+      "<rootDir>/src"
+    ],
     "testPathIgnorePatterns": [
       "<rootDir>/dist/",
       "<rootDir>/node_modules/"
